@@ -76,7 +76,7 @@ services:
       DATABASE_TIMEOUT: 10
       GATEWAY_API_KEY: %s
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO /dev/null http://localhost:$${SERVER_PORT:-8080}/status"]
+      test: ["CMD-SHELL", "wget -qO /dev/null http://localhost:8080/status"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -88,7 +88,7 @@ services:
     restart: unless-stopped
     environment:
       NGROK_AUTHTOKEN: %s
-    command: http --domain=%s portal:$${SERVER_PORT:-8080}
+    command: http --domain=%s portal:8080
     depends_on:
       portal:
         condition: service_healthy
@@ -98,7 +98,7 @@ services:
     container_name: portal-scripts
     restart: "no"
     environment:
-      PORTAL_URL: http://portal:$${SERVER_PORT:-8080}
+      PORTAL_URL: http://portal:8080
       PORTAL_API_KEY: %s
       PORTAL_HISTORY_FILE: /app/history/portal_scripts_history.json
     volumes:
