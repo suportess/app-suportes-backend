@@ -40,7 +40,7 @@ public class UsuarioController {
     public ResponseEntity<ApiResponse<List<UsuarioDTO>>> listarTodos(
             @RequestHeader("X-Auth0-Sub") String auth0Sub
     ) {
-        return ResponseEntity.ok(ApiResponse.ok(usuarioService.listarTodos()));
+        return ResponseEntity.ok(ApiResponse.ok(usuarioService.listarTodos(auth0Sub)));
     }
 
     /** Retorna um usuário pelo ID. */
@@ -49,7 +49,7 @@ public class UsuarioController {
             @RequestHeader("X-Auth0-Sub") String auth0Sub,
             @PathVariable Long id
     ) {
-        return ResponseEntity.ok(ApiResponse.ok(usuarioService.buscarPorId(id)));
+        return ResponseEntity.ok(ApiResponse.ok(usuarioService.buscarPorId(auth0Sub, id)));
     }
 
     /** Vincula uma empresa ao usuário. */
@@ -59,7 +59,7 @@ public class UsuarioController {
             @PathVariable Long id,
             @PathVariable Long empresaId
     ) {
-        return ResponseEntity.ok(ApiResponse.ok(usuarioService.vincularEmpresa(id, empresaId)));
+        return ResponseEntity.ok(ApiResponse.ok(usuarioService.vincularEmpresa(auth0Sub, id, empresaId)));
     }
 
     /** Remove o vínculo de uma empresa ao usuário. */
@@ -69,7 +69,7 @@ public class UsuarioController {
             @PathVariable Long id,
             @PathVariable Long empresaId
     ) {
-        usuarioService.desvincularEmpresa(id, empresaId);
+        usuarioService.desvincularEmpresa(auth0Sub, id, empresaId);
         return ResponseEntity.ok(ApiResponse.ok(null));
     }
 

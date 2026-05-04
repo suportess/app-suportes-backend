@@ -7,6 +7,7 @@ import br.tec.suportes.backend.dto.empresa.EmpresaDTO;
 import br.tec.suportes.backend.dto.usuario.UsuarioDTO;
 import br.tec.suportes.backend.dto.usuario.UsuarioEmpresaDTO;
 import br.tec.suportes.backend.dto.usuario.UsuarioRequest;
+import br.tec.suportes.backend.exception.AcessoNegadoException;
 import br.tec.suportes.backend.exception.RecursoNaoEncontradoException;
 import br.tec.suportes.backend.repository.ConfEmpresaRepository;
 import br.tec.suportes.backend.repository.UsuarioEmpresaRepository;
@@ -54,12 +55,20 @@ public class UsuarioService {
     }
 
     @Transactional(readOnly = true)
-    public List<UsuarioDTO> listarTodos() {
+    public List<UsuarioDTO> listarTodos(String auth0Sub) {
+        Usuario caller = resolveCallerOrThrow(auth0Sub);
+        if ("OPERADOR".equals(caller.getTipo())) {
+            return List.of(toDTO(caller));
+        }
         return repository.findAll().stream().map(this::toDTO).toList();
     }
 
     @Transactional(readOnly = true)
-    public UsuarioDTO buscarPorId(Long id) {
+    public UsuarioDTO buscarPorId(String auth0Sub, Long id) {
+        Usuario caller = resolveCallerOrThrow(auth0Sub);
+        if ("OPERADOR".equals(caller.getTipo()) && !caller.getId().equals(id)) {
+            throw new AcessoNegadoException("Acesso negado.");
+        }
         return repository.findById(id)
                 .map(this::toDTO)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Usuário não encontrado."));
@@ -67,7 +76,11 @@ public class UsuarioService {
 
     /** Vincula uma empresa ao usuário. Idempotente — ignora se já vinculado. */
     @Transactional
-    public UsuarioDTO vincularEmpresa(Long usuarioId, Long empresaId) {
+    public UsuarioDTO vincularEmpresa(String auth0Sub, Long usuarioId, Long empresaId) {
+        Usuario caller = resolveCallerOrThrow(auth0Sub);
+        if ("OPERADOR".equals(caller.getTipo())) {
+            throw new AcessoNegadoException("Usuários do tipo OPERADOR não podem vincular empresas.");
+        }
         Usuario usuario = repository.findById(usuarioId)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Usuário não encontrado."));
         ConfEmpresa empresa = empresaRepository.findById(empresaId)
@@ -84,7 +97,11 @@ public class UsuarioService {
 
     /** Remove o vínculo de uma empresa ao usuário. */
     @Transactional
-    public void desvincularEmpresa(Long usuarioId, Long empresaId) {
+    public void desvincularEmpresa(String auth0Sub, Long usuarioId, Long empresaId) {
+        Usuario caller = resolveCallerOrThrow(auth0Sub);
+        if ("OPERADOR".equals(caller.getTipo())) {
+            throw new AcessoNegadoException("Usuários do tipo OPERADOR não podem desvincular empresas.");
+        }
         if (!repository.existsById(usuarioId))
             throw new RecursoNaoEncontradoException("Usuário não encontrado.");
         vinculoRepository.deleteByUsuarioIdAndEmpresaId(usuarioId, empresaId);
@@ -105,6 +122,11 @@ public class UsuarioService {
     }
 
     // ─── Helpers ─────────────────────────────────────────────────────────────
+
+    private Usuario resolveCallerOrThrow(String auth0Sub) {
+        return repository.findByAuth0Sub(auth0Sub)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Usuário não encontrado."));
+    }
 
     public UsuarioDTO toDTO(Usuario u) {
         List<UsuarioEmpresaDTO> empresas = vinculoRepository.findByUsuarioId(u.getId())
