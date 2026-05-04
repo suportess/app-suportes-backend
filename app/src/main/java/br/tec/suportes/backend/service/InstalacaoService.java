@@ -38,10 +38,10 @@ public class InstalacaoService {
         String domain = empresa.getDsHostPortal().replaceFirst("^https?://", "");
         String apikey = empresa.getApikey();
 
-        return buildYaml(apikey, domain);
+        return buildYaml(apikey, domain, ngrokAuthtoken);
     }
 
-    private String buildYaml(String apikey, String domain) {
+    private String buildYaml(String apikey, String domain, String ngrokAuthtoken) {
         return """
 # ─────────────────────────────────────────────────────────────────────────────
 # Portal — on-premises
