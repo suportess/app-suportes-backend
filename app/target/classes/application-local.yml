@@ -1,0 +1,16 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/testdb
+    username: postgres
+    password: postgres
+
+  jpa:
+    show-sql: true
+
+portal:
+  base-url: http://localhost:9000
+
+logging:
+  level:
+    br.tec.suportes: DEBUG
+    org.springframework.web.client: DEBUG
