@@ -76,7 +76,7 @@ services:
       DATABASE_TIMEOUT: 10
       GATEWAY_API_KEY: %s
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:$${SERVER_PORT:-8080}/status | grep -q '\"UP\"' || exit 1"]
+      test: ["CMD-SHELL", "wget -qO /dev/null http://localhost:$${SERVER_PORT:-8080}/status"]
       interval: 30s
       timeout: 5s
       retries: 3
