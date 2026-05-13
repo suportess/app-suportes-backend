@@ -56,6 +56,8 @@ public class CadastroProdutoService {
         body.put("cd_pro_fat_sus",          req.getCdProFatSus());
         body.put("cd_procedimento_sus",     req.getCdProcedimentoSus());
         body.put("cd_fornecedor_principal", req.getCdFornecedorPrincipal());
+        body.put("sn_opme",                 req.getSnOpme());
+        body.put("cd_sican",                req.getCdSican());
 
         var portalResp = portalClient.cadastrarProduto(c.host(), c.apikey(), body);
 

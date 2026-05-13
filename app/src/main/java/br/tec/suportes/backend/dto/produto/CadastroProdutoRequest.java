@@ -68,6 +68,15 @@ public class CadastroProdutoRequest {
     @JsonProperty("cd_unidade")
     private String cdUnidade;
 
+    // ── OPME / ANVISA ─────────────────────────────────────────────────────────
+    @Pattern(regexp = "^[SN]$")
+    @JsonProperty("sn_opme")
+    private String snOpme = "N";
+
+    @Size(max = 20)
+    @JsonProperty("cd_sican")
+    private String cdSican;
+
     // ── Opcionais ─────────────────────────────────────────────────────────────
     @JsonProperty("cd_tip_ativ")
     private Long cdTipAtiv;
