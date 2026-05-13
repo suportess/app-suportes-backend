@@ -2,9 +2,12 @@ package br.tec.suportes.backend.service;
 
 import br.tec.suportes.backend.client.PortalClient;
 import br.tec.suportes.backend.domain.ConfEmpresa;
+import br.tec.suportes.backend.domain.ImportacaoProduto;
 import br.tec.suportes.backend.dto.produto.CadastroProdutoRequest;
 import br.tec.suportes.backend.dto.produto.CadastroProdutoResponse;
+import br.tec.suportes.backend.dto.produto.ImportacaoProdutoDTO;
 import br.tec.suportes.backend.exception.RecursoNaoEncontradoException;
+import br.tec.suportes.backend.repository.ImportacaoProdutoRepository;
 import br.tec.suportes.backend.repository.UsuarioRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -12,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -21,11 +25,13 @@ public class CadastroProdutoService {
 
     private final PortalClient portalClient;
     private final UsuarioRepository usuarioRepository;
+    private final ImportacaoProdutoRepository importacaoRepository;
     private final ObjectMapper objectMapper;
 
     /**
      * Cadastra um novo produto no Oracle DBAMV via Portal HTTP.
      * Chama POST /mv/api/produtos no portal da empresa ativa do usuário.
+     * Se o produto for criado com sucesso, registra o de-para em importacao_produto.
      */
     public CadastroProdutoResponse cadastrar(String auth0Sub, CadastroProdutoRequest req) {
         var c = resolveCreds(auth0Sub);
@@ -54,12 +60,44 @@ public class CadastroProdutoService {
         var portalResp = portalClient.cadastrarProduto(c.host(), c.apikey(), body);
 
         Long cdProduto = null;
-        if (portalResp != null && portalResp.get("cd_produto_out") != null) {
-            try { cdProduto = Long.parseLong(portalResp.get("cd_produto_out").toString()); }
-            catch (NumberFormatException ignored) {}
+        if (portalResp != null) {
+            // Portal retorna {"resultado": {"cd_produto_out": "33337"}}
+            Object resultadoRaw = portalResp.get("resultado");
+            if (resultadoRaw instanceof java.util.Map<?, ?> resultadoMap) {
+                Object outVal = resultadoMap.get("cd_produto_out");
+                if (outVal != null) {
+                    try { cdProduto = Long.parseLong(outVal.toString()); }
+                    catch (NumberFormatException ignored) {}
+                }
+            }
+        }
+
+        // Registrar de-para quando o produto foi criado com sucesso no MV
+        if (cdProduto != null) {
+            importacaoRepository.save(ImportacaoProduto.builder()
+                    .auth0Sub(auth0Sub)
+                    .cdProdutoMv(cdProduto)
+                    .dsProduto(req.getDsProduto())
+                    .dsComercial(req.getDsComercial())
+                    .cdEspecie(req.getCdEspecie())
+                    .cdClasse(req.getCdClasse())
+                    .cdSubCla(req.getCdSubCla())
+                    .dsSubCla(req.getDsSubCla())
+                    .cdUnidade(req.getCdUnidade())
+                    .snLote(req.getSnLote())
+                    .snValidade(req.getSnValidade())
+                    .build());
         }
 
         return CadastroProdutoResponse.of(req.getDsProduto(), cdProduto);
+    }
+
+    public List<ImportacaoProdutoDTO> listarImportacoes(String auth0Sub) {
+        return importacaoRepository
+                .findByAuth0SubOrderByDtImportacaoDesc(auth0Sub)
+                .stream()
+                .map(ImportacaoProdutoDTO::of)
+                .toList();
     }
 
     // ─── Helpers ─────────────────────────────────────────────────────────────

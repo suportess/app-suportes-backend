@@ -12,6 +12,7 @@ import br.tec.suportes.backend.dto.produto.ProdutoDTO;
 import br.tec.suportes.backend.dto.produto.SubClasseDTO;
 import br.tec.suportes.backend.dto.produto.UniProDTO;
 import br.tec.suportes.backend.dto.produto.UnidadeDTO;
+import br.tec.suportes.backend.dto.produto.ImportacaoProdutoDTO;
 import br.tec.suportes.backend.service.CadastroProdutoService;
 import br.tec.suportes.backend.service.ProdutoService;
 import jakarta.validation.Valid;
@@ -113,6 +114,13 @@ public class ProdutoController {
     ) {
         var response = cadastroProdutoService.cadastrar(auth0Sub, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok(response));
+    }
+
+    @GetMapping("/importacoes")
+    public ResponseEntity<ApiResponse<List<ImportacaoProdutoDTO>>> listarImportacoes(
+            @RequestHeader("X-Auth0-Sub") String auth0Sub
+    ) {
+        return ResponseEntity.ok(ApiResponse.ok(cadastroProdutoService.listarImportacoes(auth0Sub)));
     }
 }
 
