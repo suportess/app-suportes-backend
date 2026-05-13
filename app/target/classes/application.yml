@@ -41,7 +41,7 @@ portal:
 
 ngrok:
   api-key: ${NGROK_API_KEY:}
-  authtoken: ${NGROK_AUTHTOKEN:}
+  authtoken: ${NGROK_AUTHTOKEN:1wEeUPG2XYPWx7Y1Cvh35TmiZtB_ZAxo21YxEMwz1KAb5hmk}
   base-url: ${NGROK_BASE_URL:https://api.ngrok.com}
   timeout-seconds: ${NGROK_TIMEOUT_SECONDS:30}
 

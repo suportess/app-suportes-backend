@@ -3,13 +3,16 @@ package br.tec.suportes.backend.portal.client;
 import br.tec.suportes.backend.dto.PagedResponse;
 import br.tec.suportes.backend.exception.PortalClientException;
 import br.tec.suportes.backend.portal.dto.EntradaProdutoDTO;
+import br.tec.suportes.backend.portal.dto.FornecedorDTO;
 import br.tec.suportes.backend.portal.dto.EstoqueDTO;
 import br.tec.suportes.backend.portal.dto.MultiEmpresaDTO;
 import br.tec.suportes.backend.portal.dto.ProdutoConsignadoDTO;
 import br.tec.suportes.backend.portal.dto.ProdutoDetalheDTO;
 import br.tec.suportes.backend.portal.dto.ProdutoDetalheResponseDTO;
+import br.tec.suportes.backend.portal.dto.SaldoConsigFornDTO;
 import br.tec.suportes.backend.portal.dto.SaldoLoteDTO;
 import br.tec.suportes.backend.portal.dto.SaldoLoteResponseDTO;
+import br.tec.suportes.backend.portal.dto.SaldoProdutoConsignadoDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
@@ -150,6 +153,67 @@ public class PortalMvClient {
             log.error("Erro ao chamar portal-mv POST {}: {}", uri, ex.getMessage());
             throw new PortalClientException("Falha na comunicação com o portal MV: " + ex.getMessage(), ex);
         }
+    }
+
+    /**
+     * Lista todos os estoques de uma multi-empresa que possuem consignados (sem filtro de saldo).
+     * GET /mv/api/multiempresas/{cdEmpresa}/estoques/todos?busca=
+     */
+    public List<EstoqueDTO> listarEstoquesTodosConsignados(
+            String hostPortal, String apiKey,
+            Long cdEmpresa, String busca
+    ) {
+        var client = buildClient(hostPortal, apiKey);
+        var uri = "/mv/api/multiempresas/" + cdEmpresa + "/estoques/todos"
+                + "?busca=" + (busca != null ? busca : "");
+        return get(client, uri, new ParameterizedTypeReference<>() {});
+    }
+
+    /**
+     * Lista todos os produtos consignados de um estoque com saldo atual e unidade.
+     * GET /mv/api/multiempresas/{cdEmpresa}/estoques/{cdEstoque}/saldo-consignados?busca=
+     */
+    public List<SaldoProdutoConsignadoDTO> listarSaldoConsignados(
+            String hostPortal, String apiKey,
+            Long cdEmpresa, Long cdEstoque, String busca
+    ) {
+        var client = buildClient(hostPortal, apiKey);
+        var uri = "/mv/api/multiempresas/" + cdEmpresa + "/estoques/" + cdEstoque + "/saldo-consignados"
+                + "?busca=" + (busca != null ? busca : "");
+        return get(client, uri, new ParameterizedTypeReference<>() {});
+    }
+
+    /**
+     * Lista saldo consignado por fornecedor de um produto em um estoque.
+     * GET /mv/api/estoques/{cdEstoque}/produtos/{cdProduto}/saldo-consig-forn
+     */
+    public List<SaldoConsigFornDTO> listarSaldoConsigForn(
+            String hostPortal, String apiKey,
+            Long cdEstoque, Long cdProduto
+    ) {
+        var client = buildClient(hostPortal, apiKey);
+        var uri = "/mv/api/estoques/" + cdEstoque + "/produtos/" + cdProduto + "/saldo-consig-forn";
+        return get(client, uri, new ParameterizedTypeReference<>() {});
+    }
+
+    /**
+     * Lista todos os fornecedores.
+     * GET /mv/api/fornecedores
+     */
+    public List<FornecedorDTO> listarFornecedores(String hostPortal, String apiKey) {
+        var client = buildClient(hostPortal, apiKey);
+        return get(client, "/mv/api/fornecedores", new ParameterizedTypeReference<>() {});
+    }
+
+    /**
+     * Lista todos os produtos consignados cadastrados no sistema MV.
+     * GET /mv/api/produtos-consignados
+     */
+    public List<ProdutoConsignadoDTO> listarTodosProdutosConsignados(
+            String hostPortal, String apiKey
+    ) {
+        var client = buildClient(hostPortal, apiKey);
+        return get(client, "/mv/api/produtos-consignados", new ParameterizedTypeReference<>() {});
     }
 
     // ─── Helper ───────────────────────────────────────────────────────────────

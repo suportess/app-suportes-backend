@@ -3,11 +3,14 @@ package br.tec.suportes.backend.portal.controller;
 import br.tec.suportes.backend.dto.ApiResponse;
 import br.tec.suportes.backend.dto.PagedResponse;
 import br.tec.suportes.backend.portal.dto.EntradaProdutoDTO;
+import br.tec.suportes.backend.portal.dto.FornecedorDTO;
 import br.tec.suportes.backend.portal.dto.EstoqueDTO;
 import br.tec.suportes.backend.portal.dto.MultiEmpresaDTO;
 import br.tec.suportes.backend.portal.dto.ProdutoConsignadoDTO;
 import br.tec.suportes.backend.portal.dto.ProdutoDetalheDTO;
+import br.tec.suportes.backend.portal.dto.SaldoConsigFornDTO;
 import br.tec.suportes.backend.portal.dto.SaldoLoteDTO;
+import br.tec.suportes.backend.portal.dto.SaldoProdutoConsignadoDTO;
 import br.tec.suportes.backend.portal.service.PortalMvService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -103,6 +106,63 @@ public class PortalMvController {
             @PathVariable Long cdProduto
     ) {
         var dados = portalMvService.buscarProdutoDetalhe(auth0Sub, empresaId, cdProduto);
+        return ResponseEntity.ok(ApiResponse.ok(dados));
+    }
+
+    /** Lista todos estoques de uma multi-empresa que possuem consignados (sem filtro de saldo). */
+    @GetMapping("/multiempresas/{cdMultiEmpresa}/estoques/todos")
+    public ResponseEntity<ApiResponse<List<EstoqueDTO>>> listarEstoquesTodosConsignados(
+            @RequestHeader("X-Auth0-Sub") String auth0Sub,
+            @PathVariable Long empresaId,
+            @PathVariable Long cdMultiEmpresa,
+            @RequestParam(required = false) String busca
+    ) {
+        var dados = portalMvService.listarEstoquesTodosConsignados(auth0Sub, empresaId, cdMultiEmpresa, busca);
+        return ResponseEntity.ok(ApiResponse.ok(dados));
+    }
+
+    /** Lista saldo consignado por fornecedor de um produto em um estoque. */
+    @GetMapping("/estoques/{cdEstoque}/produtos/{cdProduto}/saldo-consig-forn")
+    public ResponseEntity<ApiResponse<List<SaldoConsigFornDTO>>> listarSaldoConsigForn(
+            @RequestHeader("X-Auth0-Sub") String auth0Sub,
+            @PathVariable Long empresaId,
+            @PathVariable Long cdEstoque,
+            @PathVariable Long cdProduto
+    ) {
+        var dados = portalMvService.listarSaldoConsigForn(auth0Sub, empresaId, cdEstoque, cdProduto);
+        return ResponseEntity.ok(ApiResponse.ok(dados));
+    }
+
+    /** Lista todos os fornecedores. */
+    @GetMapping("/fornecedores")
+    public ResponseEntity<ApiResponse<List<FornecedorDTO>>> listarFornecedores(
+            @RequestHeader("X-Auth0-Sub") String auth0Sub,
+            @PathVariable Long empresaId
+    ) {
+        var dados = portalMvService.listarFornecedores(auth0Sub, empresaId);
+        return ResponseEntity.ok(ApiResponse.ok(dados));
+    }
+
+    /** Lista todos os produtos consignados cadastrados no sistema MV (sem filtro de estoque). */
+    @GetMapping("/produtos-consignados")
+    public ResponseEntity<ApiResponse<List<ProdutoConsignadoDTO>>> listarTodosProdutosConsignados(
+            @RequestHeader("X-Auth0-Sub") String auth0Sub,
+            @PathVariable Long empresaId
+    ) {
+        var dados = portalMvService.listarTodosProdutosConsignados(auth0Sub, empresaId);
+        return ResponseEntity.ok(ApiResponse.ok(dados));
+    }
+
+    /** Lista todos os produtos consignados de um estoque com saldo atual e unidade. */
+    @GetMapping("/multiempresas/{cdMultiEmpresa}/estoques/{cdEstoque}/saldo-consignados")
+    public ResponseEntity<ApiResponse<List<SaldoProdutoConsignadoDTO>>> listarSaldoConsignados(
+            @RequestHeader("X-Auth0-Sub") String auth0Sub,
+            @PathVariable Long empresaId,
+            @PathVariable Long cdMultiEmpresa,
+            @PathVariable Long cdEstoque,
+            @RequestParam(required = false) String busca
+    ) {
+        var dados = portalMvService.listarSaldoConsignados(auth0Sub, empresaId, cdMultiEmpresa, cdEstoque, busca);
         return ResponseEntity.ok(ApiResponse.ok(dados));
     }
 }

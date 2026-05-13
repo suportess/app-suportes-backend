@@ -3,7 +3,16 @@ package br.tec.suportes.backend.client;
 import br.tec.suportes.backend.dto.PagedResponse;
 import br.tec.suportes.backend.dto.movimento.MovimentoDTO;
 import br.tec.suportes.backend.dto.movimento.MovimentoRequest;
+import br.tec.suportes.backend.dto.produto.ClasseDTO;
+import br.tec.suportes.backend.dto.produto.ClassificacaoRequest;
+import br.tec.suportes.backend.dto.produto.EmpresaProdutoDTO;
+import br.tec.suportes.backend.dto.produto.EspecieDTO;
 import br.tec.suportes.backend.dto.produto.ProdutoDTO;
+import br.tec.suportes.backend.dto.produto.SubClasseDTO;
+import br.tec.suportes.backend.dto.produto.UniProDTO;
+import br.tec.suportes.backend.dto.produto.UnidadeDTO;
+
+import java.util.List;
 import br.tec.suportes.backend.exception.PortalClientException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -65,9 +74,10 @@ public class PortalClient {
     // --- Produtos -------------------------------------------------------------
 
     public PagedResponse<ProdutoDTO> listarProdutos(String host, String apikey,
-            String nmProduto, int page, int pageSize) {
-        var path = UriComponentsBuilder.fromPath("/produto-listar")
-                .queryParamIfPresent("nm_produto", java.util.Optional.ofNullable(nmProduto))
+            String busca, int page, int pageSize) {
+        // Portal exige o parâmetro "busca" sempre presente (mesmo vazio) para resolver o bind ":busca"
+        var path = UriComponentsBuilder.fromPath("/mv/api/produtos")
+                .queryParam("busca", busca != null ? busca : "")
                 .queryParam("page", page)
                 .queryParam("pageSize", pageSize)
                 .build()
@@ -76,8 +86,48 @@ public class PortalClient {
     }
 
     public ProdutoDTO buscarProduto(String host, String apikey, Long id) {
-        return get(host, apikey, "/produto-buscar-por-id?cd_produto=" + id,
+        return get(host, apikey, "/mv/api/produtos/" + id,
                 new ParameterizedTypeReference<>() {});
+    }
+
+    public List<UniProDTO> listarUniPro(String host, String apikey, Long cdProduto) {
+        return get(host, apikey, "/mv/api/produtos/" + cdProduto + "/unidades",
+                new ParameterizedTypeReference<>() {});
+    }
+
+    public List<EmpresaProdutoDTO> listarEmpresaProduto(String host, String apikey, Long cdProduto) {
+        return get(host, apikey, "/mv/api/produtos/" + cdProduto + "/empresas",
+                new ParameterizedTypeReference<>() {});
+    }
+
+    public List<EspecieDTO> listarEspecies(String host, String apikey) {
+        return get(host, apikey, "/mv/api/especies",
+                new ParameterizedTypeReference<>() {});
+    }
+
+    public List<UnidadeDTO> listarUnidades(String host, String apikey) {
+        return get(host, apikey, "/mv/api/unidades",
+                new ParameterizedTypeReference<>() {});
+    }
+
+    public List<ClasseDTO> listarClasses(String host, String apikey, Integer cdEspecie) {
+        return get(host, apikey, "/mv/api/classes?cd_especie=" + cdEspecie,
+                new ParameterizedTypeReference<>() {});
+    }
+
+    public List<SubClasseDTO> listarSubClasses(String host, String apikey, Integer cdEspecie, Integer cdClasse) {
+        return get(host, apikey, "/mv/api/sub-classes?cd_especie=" + cdEspecie + "&cd_classe=" + cdClasse,
+                new ParameterizedTypeReference<>() {});
+    }
+
+    public void vincularClassificacao(String host, String apikey, Long cdProduto, ClassificacaoRequest req) {
+        put(host, apikey, "/mv/api/produtos/" + cdProduto + "/classificacao",
+                Map.of("cd_especie", req.getCdEspecie(), "cd_classe", req.getCdClasse(), "cd_sub_cla", req.getCdSubCla()));
+    }
+
+    public java.util.Map<String, Object> cadastrarProduto(String host, String apikey, java.util.Map<String, Object> body) {
+        return post(host, apikey, "/mv/api/produtos", body,
+                new ParameterizedTypeReference<java.util.Map<String, Object>>() {});
     }
 
     // --- Status ---------------------------------------------------------------
@@ -155,6 +205,21 @@ public class PortalClient {
                     .toBodilessEntity();
         } catch (RestClientException ex) {
             log.error("Erro ao chamar portal DELETE {}{}: {}", host, path, ex.getMessage());
+            throw new PortalClientException("Falha na comunicacao com o portal: " + ex.getMessage(), ex);
+        }
+    }
+
+    private void put(String host, String apikey, String path, Object body) {
+        try {
+            log.debug("portal PUT {}{}", host, path);
+            portalRestClient.put()
+                    .uri(host + path)
+                    .header("Authorization", "Bearer " + apikey)
+                    .body(body)
+                    .retrieve()
+                    .toBodilessEntity();
+        } catch (RestClientException ex) {
+            log.error("Erro ao chamar portal PUT {}{}: {}", host, path, ex.getMessage());
             throw new PortalClientException("Falha na comunicacao com o portal: " + ex.getMessage(), ex);
         }
     }

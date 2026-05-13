@@ -1,0 +1,894 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2026-05-12T00:00:00.000Z",
+  "__export_source": "app-suportes-backend",
+  "resources": [
+
+    {
+      "_id": "wrk_suportes",
+      "_type": "workspace",
+      "name": "app-suportes-backend",
+      "description": "API do sistema Suportes — backend Spring Boot",
+      "scope": "collection"
+    },
+
+    {
+      "_id": "env_base",
+      "_type": "environment",
+      "name": "Base Environment",
+      "parentId": "wrk_suportes",
+      "data": {
+        "baseUrl": "http://192.168.1.6:8031/api",
+        "auth0Sub": "auth0|6a03c0931e1892165106f71a",
+        "empresaId": 1,
+        "cdMultiEmpresa": 1,
+        "cdEstoque": 1,
+        "cdProduto": 1
+      }
+    },
+
+    { "_id": "fld_usuarios",      "_type": "request_group", "name": "Usuários",                   "parentId": "wrk_suportes" },
+    { "_id": "fld_empresa",       "_type": "request_group", "name": "Configurações / Empresa",    "parentId": "wrk_suportes" },
+    { "_id": "fld_banco",         "_type": "request_group", "name": "Configurações / Banco",      "parentId": "wrk_suportes" },
+    { "_id": "fld_instalacao",    "_type": "request_group", "name": "Configurações / Instalação", "parentId": "wrk_suportes" },
+    { "_id": "fld_dashboard",     "_type": "request_group", "name": "Dashboard",                  "parentId": "wrk_suportes" },
+    { "_id": "fld_produtos",      "_type": "request_group", "name": "Produtos",                   "parentId": "wrk_suportes" },
+    { "_id": "fld_movimentos",    "_type": "request_group", "name": "Movimentos",                 "parentId": "wrk_suportes" },
+    { "_id": "fld_baixa",         "_type": "request_group", "name": "Operações Baixa Consignado", "parentId": "wrk_suportes" },
+    { "_id": "fld_transferencia", "_type": "request_group", "name": "Transferências Consignado",  "parentId": "wrk_suportes" },
+    { "_id": "fld_portal",        "_type": "request_group", "name": "Portal MV",                  "parentId": "wrk_suportes" },
+    { "_id": "fld_ngrok",         "_type": "request_group", "name": "Ngrok",                      "parentId": "wrk_suportes" },
+
+    {
+      "_id": "fld_ngrok_endpoints",     "_type": "request_group", "name": "Endpoints",       "parentId": "fld_ngrok"
+    },
+    {
+      "_id": "fld_ngrok_tunnels",       "_type": "request_group", "name": "Tunnels",         "parentId": "fld_ngrok"
+    },
+    {
+      "_id": "fld_ngrok_sessions",      "_type": "request_group", "name": "Tunnel Sessions", "parentId": "fld_ngrok"
+    },
+    {
+      "_id": "fld_ngrok_domains",       "_type": "request_group", "name": "Reserved Domains","parentId": "fld_ngrok"
+    },
+    {
+      "_id": "fld_ngrok_credentials",   "_type": "request_group", "name": "Credentials",     "parentId": "fld_ngrok"
+    },
+
+    {
+      "_id": "req_usr_provisionar",
+      "_type": "request",
+      "parentId": "fld_usuarios",
+      "name": "Provisionar / criar usuário (me)",
+      "method": "POST",
+      "url": "{{ baseUrl }}/usuarios/me",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"auth0Sub\": \"auth0|exemplo123\",\n  \"email\": \"usuario@exemplo.com\",\n  \"nmUsuario\": \"João da Silva\",\n  \"picture\": \"https://exemplo.com/foto.jpg\"\n}"
+      }
+    },
+
+    {
+      "_id": "req_usr_me",
+      "_type": "request",
+      "parentId": "fld_usuarios",
+      "name": "Buscar perfil (me)",
+      "method": "GET",
+      "url": "{{ baseUrl }}/usuarios/me",
+      "headers": [{ "name": "X-Auth0-Sub", "value": "{{ auth0Sub }}" }]
+    },
+
+    {
+      "_id": "req_usr_listar",
+      "_type": "request",
+      "parentId": "fld_usuarios",
+      "name": "Listar todos os usuários",
+      "method": "GET",
+      "url": "{{ baseUrl }}/usuarios",
+      "headers": [{ "name": "X-Auth0-Sub", "value": "{{ auth0Sub }}" }]
+    },
+
+    {
+      "_id": "req_usr_buscar_id",
+      "_type": "request",
+      "parentId": "fld_usuarios",
+      "name": "Buscar usuário por ID",
+      "method": "GET",
+      "url": "{{ baseUrl }}/usuarios/1",
+      "headers": [{ "name": "X-Auth0-Sub", "value": "{{ auth0Sub }}" }]
+    },
+
+    {
+      "_id": "req_usr_vincular_empresa",
+      "_type": "request",
+      "parentId": "fld_usuarios",
+      "name": "Vincular empresa ao usuário",
+      "method": "POST",
+      "url": "{{ baseUrl }}/usuarios/1/empresas/{{ empresaId }}",
+      "headers": [{ "name": "X-Auth0-Sub", "value": "{{ auth0Sub }}" }]
+    },
+
+    {
+      "_id": "req_usr_desvincular_empresa",
+      "_type": "request",
+      "parentId": "fld_usuarios",
+      "name": "Desvincular empresa do usuário",
+      "method": "DELETE",
+      "url": "{{ baseUrl }}/usuarios/1/empresas/{{ empresaId }}",
+      "headers": [{ "name": "X-Auth0-Sub", "value": "{{ auth0Sub }}" }]
+    },
+
+    {
+      "_id": "req_usr_empresa_ativa",
+      "_type": "request",
+      "parentId": "fld_usuarios",
+      "name": "Definir empresa ativa",
+      "method": "PUT",
+      "url": "{{ baseUrl }}/usuarios/me/empresa-ativa/{{ empresaId }}",
+      "headers": [{ "name": "X-Auth0-Sub", "value": "{{ auth0Sub }}" }]
+    },
+
+    {
+      "_id": "req_emp_listar",
+      "_type": "request",
+      "parentId": "fld_empresa",
+      "name": "Listar empresas do usuário",
+      "method": "GET",
+      "url": "{{ baseUrl }}/configuracoes/empresa",
+      "headers": [{ "name": "X-Auth0-Sub", "value": "{{ auth0Sub }}" }]
+    },
+
+    {
+      "_id": "req_emp_buscar",
+      "_type": "request",
+      "parentId": "fld_empresa",
+      "name": "Buscar empresa por ID",
+      "method": "GET",
+      "url": "{{ baseUrl }}/configuracoes/empresa/{{ empresaId }}",
+      "headers": [{ "name": "X-Auth0-Sub", "value": "{{ auth0Sub }}" }]
+    },
+
+    {
+      "_id": "req_emp_cadastrar",
+      "_type": "request",
+      "parentId": "fld_empresa",
+      "name": "Cadastrar empresa",
+      "method": "POST",
+      "url": "{{ baseUrl }}/configuracoes/empresa",
+      "headers": [
+        { "name": "X-Auth0-Sub", "value": "{{ auth0Sub }}" },
+        { "name": "Content-Type", "value": "application/json" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nmEmpresa\": \"Hospital Exemplo\",\n  \"dsRazaoSocial\": \"Hospital Exemplo LTDA\",\n  \"nrCnpj\": \"12.345.678/0001-99\",\n  \"dsEmail\": \"contato@hospital.com\",\n  \"nrTelefone\": \"(11) 99999-9999\",\n  \"dsHostPortal\": \"\"\n}"
+      }
+    },
+
+    {
+      "_id": "req_emp_atualizar",
+      "_type": "request",
+      "parentId": "fld_empresa",
+      "name": "Atualizar empresa",
+      "method": "PUT",
+      "url": "{{ baseUrl }}/configuracoes/empresa/{{ empresaId }}",
+      "headers": [
+        { "name": "X-Auth0-Sub", "value": "{{ auth0Sub }}" },
+        { "name": "Content-Type", "value": "application/json" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nmEmpresa\": \"Hospital Exemplo Atualizado\",\n  \"dsRazaoSocial\": \"Hospital Exemplo LTDA\",\n  \"nrCnpj\": \"12.345.678/0001-99\",\n  \"dsEmail\": \"contato@hospital.com\",\n  \"nrTelefone\": \"(11) 99999-9999\",\n  \"dsHostPortal\": \"https://abc123.ngrok.io\"\n}"
+      }
+    },
+
+    {
+      "_id": "req_emp_deletar",
+      "_type": "request",
+      "parentId": "fld_empresa",
+      "name": "Deletar empresa",
+      "method": "DELETE",
+      "url": "{{ baseUrl }}/configuracoes/empresa/{{ empresaId }}",
+      "headers": [{ "name": "X-Auth0-Sub", "value": "{{ auth0Sub }}" }]
+    },
+
+    {
+      "_id": "req_emp_regenerar_apikey",
+      "_type": "request",
+      "parentId": "fld_empresa",
+      "name": "Regenerar API Key",
+      "method": "POST",
+      "url": "{{ baseUrl }}/configuracoes/empresa/{{ empresaId }}/regenerar-apikey",
+      "headers": [{ "name": "X-Auth0-Sub", "value": "{{ auth0Sub }}" }]
+    },
+
+    {
+      "_id": "req_emp_gerar_ngrok",
+      "_type": "request",
+      "parentId": "fld_empresa",
+      "name": "Gerar domínio ngrok",
+      "method": "POST",
+      "url": "{{ baseUrl }}/configuracoes/empresa/{{ empresaId }}/gerar-ngrok",
+      "headers": [{ "name": "X-Auth0-Sub", "value": "{{ auth0Sub }}" }]
+    },
+
+    {
+      "_id": "req_emp_remover_ngrok",
+      "_type": "request",
+      "parentId": "fld_empresa",
+      "name": "Remover domínio ngrok",
+      "method": "DELETE",
+      "url": "{{ baseUrl }}/configuracoes/empresa/{{ empresaId }}/gerar-ngrok?ngrokId=rd_abc123",
+      "headers": [{ "name": "X-Auth0-Sub", "value": "{{ auth0Sub }}" }]
+    },
+
+    {
+      "_id": "req_banco_status",
+      "_type": "request",
+      "parentId": "fld_banco",
+      "name": "Status do portal (ngrok)",
+      "method": "GET",
+      "url": "{{ baseUrl }}/configuracoes/banco/status",
+      "headers": [{ "name": "X-Auth0-Sub", "value": "{{ auth0Sub }}" }]
+    },
+
+    {
+      "_id": "req_banco_buscar",
+      "_type": "request",
+      "parentId": "fld_banco",
+      "name": "Buscar configuração de banco",
+      "method": "GET",
+      "url": "{{ baseUrl }}/configuracoes/banco",
+      "headers": [{ "name": "X-Auth0-Sub", "value": "{{ auth0Sub }}" }]
+    },
+
+    {
+      "_id": "req_banco_salvar",
+      "_type": "request",
+      "parentId": "fld_banco",
+      "name": "Salvar configuração de banco",
+      "method": "POST",
+      "url": "{{ baseUrl }}/configuracoes/banco",
+      "headers": [
+        { "name": "X-Auth0-Sub", "value": "{{ auth0Sub }}" },
+        { "name": "Content-Type", "value": "application/json" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"dsDriver\": \"oracle\",\n  \"dsHost\": \"localhost\",\n  \"nrPorta\": 1522,\n  \"nmBanco\": \"XEPDB1\",\n  \"nmUsuario\": \"DBAMV\",\n  \"dsSenha\": \"Oracle123\",\n  \"nrMaxOpenConns\": 10,\n  \"nrMaxIdleConns\": 5,\n  \"nrConnMaxLifetime\": 300,\n  \"nrConnMaxIdleTime\": 60\n}"
+      }
+    },
+
+    {
+      "_id": "req_banco_remover",
+      "_type": "request",
+      "parentId": "fld_banco",
+      "name": "Remover configuração de banco",
+      "method": "DELETE",
+      "url": "{{ baseUrl }}/configuracoes/banco",
+      "headers": [{ "name": "X-Auth0-Sub", "value": "{{ auth0Sub }}" }]
+    },
+
+    {
+      "_id": "req_inst_docker",
+      "_type": "request",
+      "parentId": "fld_instalacao",
+      "name": "Gerar docker-compose.yml",
+      "method": "GET",
+      "url": "{{ baseUrl }}/configuracoes/instalacao/docker-compose",
+      "headers": [{ "name": "X-Auth0-Sub", "value": "{{ auth0Sub }}" }]
+    },
+
+    {
+      "_id": "req_dashboard",
+      "_type": "request",
+      "parentId": "fld_dashboard",
+      "name": "Resumo do dashboard",
+      "method": "GET",
+      "url": "{{ baseUrl }}/dashboard"
+    },
+
+    {
+      "_id": "req_prod_listar",
+      "_type": "request",
+      "parentId": "fld_produtos",
+      "name": "Listar produtos",
+      "method": "GET",
+      "url": "{{ baseUrl }}/produtos?busca=&page=1&pageSize=50",
+      "headers": [{ "name": "X-Auth0-Sub", "value": "{{ auth0Sub }}" }]
+    },
+
+    {
+      "_id": "req_prod_buscar_id",
+      "_type": "request",
+      "parentId": "fld_produtos",
+      "name": "Buscar produto por ID",
+      "method": "GET",
+      "url": "{{ baseUrl }}/produtos/{{ cdProduto }}",
+      "headers": [{ "name": "X-Auth0-Sub", "value": "{{ auth0Sub }}" }]
+    },
+
+    {
+      "_id": "req_prod_unipro",
+      "_type": "request",
+      "parentId": "fld_produtos",
+      "name": "Listar unidades do produto (UNI_PRO)",
+      "method": "GET",
+      "url": "{{ baseUrl }}/produtos/{{ cdProduto }}/unidades",
+      "headers": [{ "name": "X-Auth0-Sub", "value": "{{ auth0Sub }}" }]
+    },
+
+    {
+      "_id": "req_prod_empresas",
+      "_type": "request",
+      "parentId": "fld_produtos",
+      "name": "Listar empresas do produto",
+      "method": "GET",
+      "url": "{{ baseUrl }}/produtos/{{ cdProduto }}/empresas",
+      "headers": [{ "name": "X-Auth0-Sub", "value": "{{ auth0Sub }}" }]
+    },
+
+    {
+      "_id": "req_prod_especies",
+      "_type": "request",
+      "parentId": "fld_produtos",
+      "name": "Listar espécies",
+      "method": "GET",
+      "url": "{{ baseUrl }}/produtos/especies",
+      "headers": [{ "name": "X-Auth0-Sub", "value": "{{ auth0Sub }}" }]
+    },
+
+    {
+      "_id": "req_prod_unidades",
+      "_type": "request",
+      "parentId": "fld_produtos",
+      "name": "Listar unidades (UNIDADE)",
+      "method": "GET",
+      "url": "{{ baseUrl }}/produtos/unidades",
+      "headers": [{ "name": "X-Auth0-Sub", "value": "{{ auth0Sub }}" }]
+    },
+
+    {
+      "_id": "req_prod_classes",
+      "_type": "request",
+      "parentId": "fld_produtos",
+      "name": "Listar classes por espécie",
+      "method": "GET",
+      "url": "{{ baseUrl }}/produtos/classes?cdEspecie=1",
+      "headers": [{ "name": "X-Auth0-Sub", "value": "{{ auth0Sub }}" }]
+    },
+
+    {
+      "_id": "req_prod_subclasses",
+      "_type": "request",
+      "parentId": "fld_produtos",
+      "name": "Listar subclasses por espécie e classe",
+      "method": "GET",
+      "url": "{{ baseUrl }}/produtos/sub-classes?cdEspecie=1&cdClasse=1",
+      "headers": [{ "name": "X-Auth0-Sub", "value": "{{ auth0Sub }}" }]
+    },
+
+    {
+      "_id": "req_prod_classificacao",
+      "_type": "request",
+      "parentId": "fld_produtos",
+      "name": "Vincular classificação ao produto",
+      "method": "PUT",
+      "url": "{{ baseUrl }}/produtos/{{ cdProduto }}/classificacao",
+      "headers": [
+        { "name": "X-Auth0-Sub", "value": "{{ auth0Sub }}" },
+        { "name": "Content-Type", "value": "application/json" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"cdEspecie\": 1,\n  \"cdClasse\": 2,\n  \"cdSubCla\": 3\n}"
+      }
+    },
+
+    {
+      "_id": "req_prod_cadastrar",
+      "_type": "request",
+      "parentId": "fld_produtos",
+      "name": "Cadastrar produto",
+      "method": "POST",
+      "url": "{{ baseUrl }}/produtos",
+      "headers": [
+        { "name": "X-Auth0-Sub", "value": "{{ auth0Sub }}" },
+        { "name": "Content-Type", "value": "application/json" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"ds_produto\": \"PARACETAMOL 500MG\",\n  \"ds_comercial\": \"Tylenol\",\n  \"ds_especificacao\": \"Comprimido revestido\",\n  \"sn_lote\": \"S\",\n  \"sn_validade\": \"S\",\n  \"sn_medicamento\": \"S\",\n  \"sn_consignado\": \"N\",\n  \"tp_sexo\": \"AM\",\n  \"cd_especie\": 1,\n  \"cd_classe\": 2,\n  \"cd_sub_cla\": 3,\n  \"ds_sub_cla\": \"ANALGESICO\",\n  \"cd_unidade\": \"CP\",\n  \"cd_fornecedor_principal\": 10,\n  \"empresas\": [1, 2]\n}"
+      }
+    },
+
+    {
+      "_id": "req_mov_listar",
+      "_type": "request",
+      "parentId": "fld_movimentos",
+      "name": "Listar movimentos",
+      "method": "GET",
+      "url": "{{ baseUrl }}/movimentos?cdEstoque={{ cdEstoque }}&page=1&pageSize=20",
+      "headers": [{ "name": "X-Auth0-Sub", "value": "{{ auth0Sub }}" }]
+    },
+
+    {
+      "_id": "req_mov_buscar_id",
+      "_type": "request",
+      "parentId": "fld_movimentos",
+      "name": "Buscar movimento por ID",
+      "method": "GET",
+      "url": "{{ baseUrl }}/movimentos/1",
+      "headers": [{ "name": "X-Auth0-Sub", "value": "{{ auth0Sub }}" }]
+    },
+
+    {
+      "_id": "req_mov_inserir",
+      "_type": "request",
+      "parentId": "fld_movimentos",
+      "name": "Inserir movimento",
+      "method": "POST",
+      "url": "{{ baseUrl }}/movimentos",
+      "headers": [
+        { "name": "X-Auth0-Sub", "value": "{{ auth0Sub }}" },
+        { "name": "Content-Type", "value": "application/json" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"cdEstoque\": 1,\n  \"tpMvtoEstoque\": \"S\",\n  \"cdSetor\": 10,\n  \"dsObservacao\": \"Saída para setor de enfermagem\"\n}"
+      }
+    },
+
+    {
+      "_id": "req_mov_concluir",
+      "_type": "request",
+      "parentId": "fld_movimentos",
+      "name": "Concluir movimento",
+      "method": "PATCH",
+      "url": "{{ baseUrl }}/movimentos/1/concluir?dtConclusao=2026-05-12",
+      "headers": [{ "name": "X-Auth0-Sub", "value": "{{ auth0Sub }}" }]
+    },
+
+    {
+      "_id": "req_mov_excluir",
+      "_type": "request",
+      "parentId": "fld_movimentos",
+      "name": "Excluir movimento",
+      "method": "DELETE",
+      "url": "{{ baseUrl }}/movimentos/1",
+      "headers": [{ "name": "X-Auth0-Sub", "value": "{{ auth0Sub }}" }]
+    },
+
+    {
+      "_id": "req_baixa_listar",
+      "_type": "request",
+      "parentId": "fld_baixa",
+      "name": "Listar operações de baixa",
+      "method": "GET",
+      "url": "{{ baseUrl }}/empresas/{{ empresaId }}/operacoes-baixa-consignado?page=1&pageSize=20",
+      "headers": [{ "name": "X-Auth0-Sub", "value": "{{ auth0Sub }}" }]
+    },
+
+    {
+      "_id": "req_baixa_salvar",
+      "_type": "request",
+      "parentId": "fld_baixa",
+      "name": "Salvar operação de baixa",
+      "method": "POST",
+      "url": "{{ baseUrl }}/empresas/{{ empresaId }}/operacoes-baixa-consignado",
+      "headers": [
+        { "name": "X-Auth0-Sub", "value": "{{ auth0Sub }}" },
+        { "name": "Content-Type", "value": "application/json" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"cdMultiEmpresa\": 1,\n  \"cdEstoque\": 1,\n  \"dsEstoque\": \"Estoque Central\",\n  \"origens\": [\n    { \"cdProduto\": 101, \"dsProduto\": \"PARACETAMOL 500MG\", \"qtEstoqueAtual\": 50.0 }\n  ],\n  \"itens\": [\n    {\n      \"cdProduto\": 101,\n      \"dsProduto\": \"PARACETAMOL 500MG\",\n      \"snLote\": \"S\",\n      \"snValidade\": \"S\",\n      \"linhas\": [\n        {\n          \"cdFornecedor\": 5,\n          \"nmFornecedor\": \"Fornecedor ABC\",\n          \"quantidade\": 10.0,\n          \"lote\": \"LOT001\",\n          \"validade\": \"2027-12-31\"\n        }\n      ]\n    }\n  ]\n}"
+      }
+    },
+
+    {
+      "_id": "req_baixa_atualizar",
+      "_type": "request",
+      "parentId": "fld_baixa",
+      "name": "Atualizar operação de baixa",
+      "method": "PUT",
+      "url": "{{ baseUrl }}/empresas/{{ empresaId }}/operacoes-baixa-consignado/1",
+      "headers": [
+        { "name": "X-Auth0-Sub", "value": "{{ auth0Sub }}" },
+        { "name": "Content-Type", "value": "application/json" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"cdMultiEmpresa\": 1,\n  \"cdEstoque\": 1,\n  \"dsEstoque\": \"Estoque Central\",\n  \"origens\": [\n    { \"cdProduto\": 101, \"dsProduto\": \"PARACETAMOL 500MG\", \"qtEstoqueAtual\": 50.0 }\n  ],\n  \"itens\": [\n    {\n      \"cdProduto\": 101,\n      \"dsProduto\": \"PARACETAMOL 500MG\",\n      \"snLote\": \"S\",\n      \"snValidade\": \"S\",\n      \"linhas\": [\n        {\n          \"cdFornecedor\": 5,\n          \"nmFornecedor\": \"Fornecedor ABC\",\n          \"quantidade\": 15.0,\n          \"lote\": \"LOT001\",\n          \"validade\": \"2027-12-31\"\n        }\n      ]\n    }\n  ]\n}"
+      }
+    },
+
+    {
+      "_id": "req_baixa_deletar",
+      "_type": "request",
+      "parentId": "fld_baixa",
+      "name": "Deletar operação de baixa",
+      "method": "DELETE",
+      "url": "{{ baseUrl }}/empresas/{{ empresaId }}/operacoes-baixa-consignado/1",
+      "headers": [{ "name": "X-Auth0-Sub", "value": "{{ auth0Sub }}" }]
+    },
+
+    {
+      "_id": "req_transf_listar",
+      "_type": "request",
+      "parentId": "fld_transferencia",
+      "name": "Listar transferências",
+      "method": "GET",
+      "url": "{{ baseUrl }}/empresas/{{ empresaId }}/transferencias-consignado?page=1&pageSize=20",
+      "headers": [{ "name": "X-Auth0-Sub", "value": "{{ auth0Sub }}" }]
+    },
+
+    {
+      "_id": "req_transf_salvar",
+      "_type": "request",
+      "parentId": "fld_transferencia",
+      "name": "Salvar transferência (PENDENTE)",
+      "method": "POST",
+      "url": "{{ baseUrl }}/empresas/{{ empresaId }}/transferencias-consignado",
+      "headers": [
+        { "name": "X-Auth0-Sub", "value": "{{ auth0Sub }}" },
+        { "name": "Content-Type", "value": "application/json" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"cdMultiEmpresa\": 1,\n  \"cdEstoque\": 1,\n  \"dsEstoque\": \"Estoque Central\",\n  \"cdProdutoDev\": 101,\n  \"dsProdutoDev\": \"PARACETAMOL 500MG\",\n  \"cdEntPro\": 500,\n  \"cdLoteDev\": \"LOT001\",\n  \"dtValidadeDev\": \"2027-12-31\",\n  \"qtDevolvida\": 5.0,\n  \"cdProdutoEnt\": 202,\n  \"dsProdutoEnt\": \"DIPIRONA 500MG\",\n  \"cdLoteEnt\": \"LOT002\",\n  \"dtValidadeEnt\": \"2027-06-30\",\n  \"qtEntrada\": 5.0,\n  \"dtDevolucao\": \"2026-05-12\"\n}"
+      }
+    },
+
+    {
+      "_id": "req_transf_concluir",
+      "_type": "request",
+      "parentId": "fld_transferencia",
+      "name": "Concluir transferência",
+      "method": "POST",
+      "url": "{{ baseUrl }}/empresas/{{ empresaId }}/transferencias-consignado/1/concluir",
+      "headers": [{ "name": "X-Auth0-Sub", "value": "{{ auth0Sub }}" }]
+    },
+
+    {
+      "_id": "req_portal_multiempresas",
+      "_type": "request",
+      "parentId": "fld_portal",
+      "name": "Listar multi-empresas",
+      "method": "GET",
+      "url": "{{ baseUrl }}/portal/mv/empresas/{{ empresaId }}/multiempresas",
+      "headers": [{ "name": "X-Auth0-Sub", "value": "{{ auth0Sub }}" }]
+    },
+
+    {
+      "_id": "req_portal_estoques",
+      "_type": "request",
+      "parentId": "fld_portal",
+      "name": "Listar estoques de uma multi-empresa",
+      "method": "GET",
+      "url": "{{ baseUrl }}/portal/mv/empresas/{{ empresaId }}/multiempresas/{{ cdMultiEmpresa }}/estoques?page=1&pageSize=20",
+      "headers": [{ "name": "X-Auth0-Sub", "value": "{{ auth0Sub }}" }]
+    },
+
+    {
+      "_id": "req_portal_estoques_todos",
+      "_type": "request",
+      "parentId": "fld_portal",
+      "name": "Listar todos os estoques com consignados",
+      "method": "GET",
+      "url": "{{ baseUrl }}/portal/mv/empresas/{{ empresaId }}/multiempresas/{{ cdMultiEmpresa }}/estoques/todos",
+      "headers": [{ "name": "X-Auth0-Sub", "value": "{{ auth0Sub }}" }]
+    },
+
+    {
+      "_id": "req_portal_produtos_consignados",
+      "_type": "request",
+      "parentId": "fld_portal",
+      "name": "Listar produtos consignados de um estoque",
+      "method": "GET",
+      "url": "{{ baseUrl }}/portal/mv/empresas/{{ empresaId }}/multiempresas/{{ cdMultiEmpresa }}/estoques/{{ cdEstoque }}/produtos?page=1&pageSize=20",
+      "headers": [{ "name": "X-Auth0-Sub", "value": "{{ auth0Sub }}" }]
+    },
+
+    {
+      "_id": "req_portal_saldo_consignados",
+      "_type": "request",
+      "parentId": "fld_portal",
+      "name": "Saldo consignados de um estoque",
+      "method": "GET",
+      "url": "{{ baseUrl }}/portal/mv/empresas/{{ empresaId }}/multiempresas/{{ cdMultiEmpresa }}/estoques/{{ cdEstoque }}/saldo-consignados",
+      "headers": [{ "name": "X-Auth0-Sub", "value": "{{ auth0Sub }}" }]
+    },
+
+    {
+      "_id": "req_portal_saldo_lote",
+      "_type": "request",
+      "parentId": "fld_portal",
+      "name": "Saldo em lote de produto no estoque",
+      "method": "GET",
+      "url": "{{ baseUrl }}/portal/mv/empresas/{{ empresaId }}/estoques/{{ cdEstoque }}/produtos/{{ cdProduto }}/saldo-lote",
+      "headers": [{ "name": "X-Auth0-Sub", "value": "{{ auth0Sub }}" }]
+    },
+
+    {
+      "_id": "req_portal_saldo_consig_forn",
+      "_type": "request",
+      "parentId": "fld_portal",
+      "name": "Saldo consignado por fornecedor",
+      "method": "GET",
+      "url": "{{ baseUrl }}/portal/mv/empresas/{{ empresaId }}/estoques/{{ cdEstoque }}/produtos/{{ cdProduto }}/saldo-consig-forn",
+      "headers": [{ "name": "X-Auth0-Sub", "value": "{{ auth0Sub }}" }]
+    },
+
+    {
+      "_id": "req_portal_entradas",
+      "_type": "request",
+      "parentId": "fld_portal",
+      "name": "Listar entradas de produto no estoque",
+      "method": "GET",
+      "url": "{{ baseUrl }}/portal/mv/empresas/{{ empresaId }}/estoques/{{ cdEstoque }}/produtos/{{ cdProduto }}/entradas?page=1&pageSize=20",
+      "headers": [{ "name": "X-Auth0-Sub", "value": "{{ auth0Sub }}" }]
+    },
+
+    {
+      "_id": "req_portal_produto_detalhe",
+      "_type": "request",
+      "parentId": "fld_portal",
+      "name": "Buscar detalhe de produto",
+      "method": "GET",
+      "url": "{{ baseUrl }}/portal/mv/empresas/{{ empresaId }}/produtos/{{ cdProduto }}",
+      "headers": [{ "name": "X-Auth0-Sub", "value": "{{ auth0Sub }}" }]
+    },
+
+    {
+      "_id": "req_portal_fornecedores",
+      "_type": "request",
+      "parentId": "fld_portal",
+      "name": "Listar fornecedores",
+      "method": "GET",
+      "url": "{{ baseUrl }}/portal/mv/empresas/{{ empresaId }}/fornecedores",
+      "headers": [{ "name": "X-Auth0-Sub", "value": "{{ auth0Sub }}" }]
+    },
+
+    {
+      "_id": "req_portal_todos_consignados",
+      "_type": "request",
+      "parentId": "fld_portal",
+      "name": "Listar todos os produtos consignados",
+      "method": "GET",
+      "url": "{{ baseUrl }}/portal/mv/empresas/{{ empresaId }}/produtos-consignados",
+      "headers": [{ "name": "X-Auth0-Sub", "value": "{{ auth0Sub }}" }]
+    },
+
+    {
+      "_id": "req_ngrok_ep_listar",
+      "_type": "request",
+      "parentId": "fld_ngrok_endpoints",
+      "name": "Listar endpoints",
+      "method": "GET",
+      "url": "{{ baseUrl }}/ngrok/endpoints"
+    },
+
+    {
+      "_id": "req_ngrok_ep_buscar",
+      "_type": "request",
+      "parentId": "fld_ngrok_endpoints",
+      "name": "Buscar endpoint por ID",
+      "method": "GET",
+      "url": "{{ baseUrl }}/ngrok/endpoints/ep_abc123"
+    },
+
+    {
+      "_id": "req_ngrok_ep_criar",
+      "_type": "request",
+      "parentId": "fld_ngrok_endpoints",
+      "name": "Criar endpoint",
+      "method": "POST",
+      "url": "{{ baseUrl }}/ngrok/endpoints",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"url\": \"https://myapp.ngrok.io\",\n  \"type\": \"https\",\n  \"description\": \"Portal MV\"\n}"
+      }
+    },
+
+    {
+      "_id": "req_ngrok_ep_atualizar",
+      "_type": "request",
+      "parentId": "fld_ngrok_endpoints",
+      "name": "Atualizar endpoint",
+      "method": "PATCH",
+      "url": "{{ baseUrl }}/ngrok/endpoints/ep_abc123",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"description\": \"Portal MV atualizado\"\n}"
+      }
+    },
+
+    {
+      "_id": "req_ngrok_ep_deletar",
+      "_type": "request",
+      "parentId": "fld_ngrok_endpoints",
+      "name": "Deletar endpoint",
+      "method": "DELETE",
+      "url": "{{ baseUrl }}/ngrok/endpoints/ep_abc123"
+    },
+
+    {
+      "_id": "req_ngrok_tun_listar",
+      "_type": "request",
+      "parentId": "fld_ngrok_tunnels",
+      "name": "Listar tunnels",
+      "method": "GET",
+      "url": "{{ baseUrl }}/ngrok/tunnels"
+    },
+
+    {
+      "_id": "req_ngrok_tun_buscar",
+      "_type": "request",
+      "parentId": "fld_ngrok_tunnels",
+      "name": "Buscar tunnel por ID",
+      "method": "GET",
+      "url": "{{ baseUrl }}/ngrok/tunnels/tn_abc123"
+    },
+
+    {
+      "_id": "req_ngrok_sess_listar",
+      "_type": "request",
+      "parentId": "fld_ngrok_sessions",
+      "name": "Listar tunnel sessions",
+      "method": "GET",
+      "url": "{{ baseUrl }}/ngrok/tunnel-sessions"
+    },
+
+    {
+      "_id": "req_ngrok_sess_buscar",
+      "_type": "request",
+      "parentId": "fld_ngrok_sessions",
+      "name": "Buscar tunnel session por ID",
+      "method": "GET",
+      "url": "{{ baseUrl }}/ngrok/tunnel-sessions/ts_abc123"
+    },
+
+    {
+      "_id": "req_ngrok_sess_restart",
+      "_type": "request",
+      "parentId": "fld_ngrok_sessions",
+      "name": "Reiniciar tunnel session",
+      "method": "POST",
+      "url": "{{ baseUrl }}/ngrok/tunnel-sessions/ts_abc123/restart"
+    },
+
+    {
+      "_id": "req_ngrok_sess_stop",
+      "_type": "request",
+      "parentId": "fld_ngrok_sessions",
+      "name": "Parar tunnel session",
+      "method": "POST",
+      "url": "{{ baseUrl }}/ngrok/tunnel-sessions/ts_abc123/stop"
+    },
+
+    {
+      "_id": "req_ngrok_dom_listar",
+      "_type": "request",
+      "parentId": "fld_ngrok_domains",
+      "name": "Listar reserved domains",
+      "method": "GET",
+      "url": "{{ baseUrl }}/ngrok/reserved-domains"
+    },
+
+    {
+      "_id": "req_ngrok_dom_buscar",
+      "_type": "request",
+      "parentId": "fld_ngrok_domains",
+      "name": "Buscar reserved domain por ID",
+      "method": "GET",
+      "url": "{{ baseUrl }}/ngrok/reserved-domains/rd_abc123"
+    },
+
+    {
+      "_id": "req_ngrok_dom_criar",
+      "_type": "request",
+      "parentId": "fld_ngrok_domains",
+      "name": "Criar reserved domain",
+      "method": "POST",
+      "url": "{{ baseUrl }}/ngrok/reserved-domains",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"meudominio.ngrok.io\",\n  \"region\": \"sa\",\n  \"description\": \"Portal Hospital Exemplo\"\n}"
+      }
+    },
+
+    {
+      "_id": "req_ngrok_dom_gerar",
+      "_type": "request",
+      "parentId": "fld_ngrok_domains",
+      "name": "Gerar reserved domain (UUID automático)",
+      "method": "POST",
+      "url": "{{ baseUrl }}/ngrok/reserved-domains/generate"
+    },
+
+    {
+      "_id": "req_ngrok_dom_atualizar",
+      "_type": "request",
+      "parentId": "fld_ngrok_domains",
+      "name": "Atualizar reserved domain",
+      "method": "PATCH",
+      "url": "{{ baseUrl }}/ngrok/reserved-domains/rd_abc123",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"description\": \"Descrição atualizada\"\n}"
+      }
+    },
+
+    {
+      "_id": "req_ngrok_dom_deletar",
+      "_type": "request",
+      "parentId": "fld_ngrok_domains",
+      "name": "Deletar reserved domain",
+      "method": "DELETE",
+      "url": "{{ baseUrl }}/ngrok/reserved-domains/rd_abc123"
+    },
+
+    {
+      "_id": "req_ngrok_cred_listar",
+      "_type": "request",
+      "parentId": "fld_ngrok_credentials",
+      "name": "Listar credentials",
+      "method": "GET",
+      "url": "{{ baseUrl }}/ngrok/credentials"
+    },
+
+    {
+      "_id": "req_ngrok_cred_buscar",
+      "_type": "request",
+      "parentId": "fld_ngrok_credentials",
+      "name": "Buscar credential por ID",
+      "method": "GET",
+      "url": "{{ baseUrl }}/ngrok/credentials/cr_abc123"
+    },
+
+    {
+      "_id": "req_ngrok_cred_criar",
+      "_type": "request",
+      "parentId": "fld_ngrok_credentials",
+      "name": "Criar credential",
+      "method": "POST",
+      "url": "{{ baseUrl }}/ngrok/credentials",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"description\": \"Portal Hospital Exemplo\",\n  \"metadata\": \"\",\n  \"acl\": []\n}"
+      }
+    },
+
+    {
+      "_id": "req_ngrok_cred_atualizar",
+      "_type": "request",
+      "parentId": "fld_ngrok_credentials",
+      "name": "Atualizar credential",
+      "method": "PATCH",
+      "url": "{{ baseUrl }}/ngrok/credentials/cr_abc123",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"description\": \"Descrição atualizada\"\n}"
+      }
+    },
+
+    {
+      "_id": "req_ngrok_cred_deletar",
+      "_type": "request",
+      "parentId": "fld_ngrok_credentials",
+      "name": "Deletar credential",
+      "method": "DELETE",
+      "url": "{{ baseUrl }}/ngrok/credentials/cr_abc123"
+    }
+
+  ]
+}
