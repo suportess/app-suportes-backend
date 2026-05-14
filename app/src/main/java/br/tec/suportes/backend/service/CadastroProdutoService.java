@@ -66,6 +66,8 @@ public class CadastroProdutoService {
         if (req.getCdProFat() == null || req.getCdProFat().isBlank()) {
             String dsProFat = (req.getDsProFat() != null && !req.getDsProFat().isBlank())
                     ? req.getDsProFat() : req.getDsProduto();
+            // DS_PRO_FAT tem limite de 60 chars no Oracle — trunca para não estourar
+            if (dsProFat != null && dsProFat.length() > 60) dsProFat = dsProFat.substring(0, 60);
             Map<String, Object> proFatBody = new HashMap<>();
             proFatBody.put("ds_pro_fat", dsProFat);
             proFatBody.put("sn_opme",    req.getSnOpme() != null ? req.getSnOpme() : "N");
