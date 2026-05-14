@@ -130,6 +130,11 @@ public class PortalClient {
                 new ParameterizedTypeReference<java.util.Map<String, Object>>() {});
     }
 
+    public Map<String, Object> cadastrarProFat(String host, String apikey, java.util.Map<String, Object> body) {
+        return post(host, apikey, "/mv/api/pro-fat", body,
+                new ParameterizedTypeReference<Map<String, Object>>() {});
+    }
+
     // --- Status ---------------------------------------------------------------
 
     /**

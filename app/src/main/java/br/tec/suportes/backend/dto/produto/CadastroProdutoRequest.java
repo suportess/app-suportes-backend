@@ -84,6 +84,10 @@ public class CadastroProdutoRequest {
     @JsonProperty("cd_pro_fat")
     private String cdProFat;
 
+    @Size(max = 60)
+    @JsonProperty("ds_pro_fat")
+    private String dsProFat;
+
     @JsonProperty("cd_pro_fat_sus")
     private String cdProFatSus;
 

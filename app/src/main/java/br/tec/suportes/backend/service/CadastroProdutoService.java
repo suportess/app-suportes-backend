@@ -59,6 +59,28 @@ public class CadastroProdutoService {
         body.put("sn_opme",                 req.getSnOpme());
         body.put("cd_sican",                req.getCdSican());
 
+        // Lógica PRO_FAT:
+        // - cd_pro_fat informado  → usa direto, sem cadastrar novo
+        // - cd_pro_fat não informado → cadastra novo PRO_FAT (ds_pro_fat ou ds_produto como fallback)
+        //   e sobrescreve o body com o código gerado
+        if (req.getCdProFat() == null || req.getCdProFat().isBlank()) {
+            String dsProFat = (req.getDsProFat() != null && !req.getDsProFat().isBlank())
+                    ? req.getDsProFat() : req.getDsProduto();
+            Map<String, Object> proFatBody = new HashMap<>();
+            proFatBody.put("ds_pro_fat", dsProFat);
+            proFatBody.put("sn_opme",    req.getSnOpme() != null ? req.getSnOpme() : "N");
+            var proFatResp = portalClient.cadastrarProFat(c.host(), c.apikey(), proFatBody);
+            if (proFatResp != null) {
+                Object resultadoRaw = proFatResp.get("resultado");
+                if (resultadoRaw instanceof java.util.Map<?, ?> rm) {
+                    Object v = rm.get("cd_pro_fat_out");
+                    if (v != null && !v.toString().isBlank()) {
+                        body.put("cd_pro_fat", v.toString());
+                    }
+                }
+            }
+        }
+
         var portalResp = portalClient.cadastrarProduto(c.host(), c.apikey(), body);
 
         Long cdProduto = null;
