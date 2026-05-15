@@ -101,5 +101,9 @@ public class CadastroProdutoRequest {
     @NotEmpty
     @JsonProperty("empresas")
     private List<Integer> empresas;
+
+    // ── Lote de importação (agrupador de sessão) ──────────────────────────────
+    @JsonProperty("cd_lote")
+    private Long cdLote;
 }
 

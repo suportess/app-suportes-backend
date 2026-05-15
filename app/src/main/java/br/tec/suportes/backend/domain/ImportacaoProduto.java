@@ -17,6 +17,10 @@ public class ImportacaoProduto {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cd_lote")
+    private ImportacaoLote lote;
+
     @Column(name = "auth0_sub", nullable = false)
     private String auth0Sub;
 

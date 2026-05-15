@@ -10,4 +10,6 @@ public interface ImportacaoProdutoRepository extends JpaRepository<ImportacaoPro
     List<ImportacaoProduto> findByAuth0SubOrderByDtImportacaoDesc(String auth0Sub);
 
     List<ImportacaoProduto> findAllByOrderByDtImportacaoDesc();
+
+    List<ImportacaoProduto> findByLoteIdOrderByDtImportacaoAsc(Long loteId);
 }

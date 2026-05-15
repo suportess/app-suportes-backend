@@ -2,17 +2,21 @@ package br.tec.suportes.backend.service;
 
 import br.tec.suportes.backend.client.PortalClient;
 import br.tec.suportes.backend.domain.ConfEmpresa;
+import br.tec.suportes.backend.domain.ImportacaoLote;
 import br.tec.suportes.backend.domain.ImportacaoProduto;
 import br.tec.suportes.backend.dto.produto.CadastroProdutoRequest;
 import br.tec.suportes.backend.dto.produto.CadastroProdutoResponse;
+import br.tec.suportes.backend.dto.produto.ImportacaoLoteDTO;
 import br.tec.suportes.backend.dto.produto.ImportacaoProdutoDTO;
 import br.tec.suportes.backend.exception.RecursoNaoEncontradoException;
+import br.tec.suportes.backend.repository.ImportacaoLoteRepository;
 import br.tec.suportes.backend.repository.ImportacaoProdutoRepository;
 import br.tec.suportes.backend.repository.UsuarioRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.List;
@@ -26,7 +30,40 @@ public class CadastroProdutoService {
     private final PortalClient portalClient;
     private final UsuarioRepository usuarioRepository;
     private final ImportacaoProdutoRepository importacaoRepository;
+    private final ImportacaoLoteRepository loteRepository;
     private final ObjectMapper objectMapper;
+
+    /**
+     * Cria um novo lote de importação (cabeçalho da sessão).
+     * Deve ser chamado uma vez antes de iniciar o import em lote no wizard.
+     */
+    @Transactional
+    public ImportacaoLoteDTO criarLote(String auth0Sub) {
+        var usuario = usuarioRepository.findByAuth0Sub(auth0Sub)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Usuário não encontrado."));
+        ConfEmpresa empresa = Optional.ofNullable(usuario.getEmpresaAtiva())
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Nenhuma empresa ativa selecionada."));
+
+        ImportacaoLote lote = ImportacaoLote.builder()
+                .auth0Sub(auth0Sub)
+                .nmUsuario(usuario.getNmUsuario())
+                .emailUsuario(usuario.getEmail())
+                .nmEmpresa(empresa.getNmEmpresa())
+                .qtProdutos(0)
+                .build();
+
+        return ImportacaoLoteDTO.of(loteRepository.save(lote));
+    }
+
+    /**
+     * Lista todos os lotes de importação do usuário, mais recentes primeiro.
+     */
+    public List<ImportacaoLoteDTO> listarLotes(String auth0Sub) {
+        return loteRepository.findByAuth0SubOrderByDtImportacaoDesc(auth0Sub)
+                .stream()
+                .map(ImportacaoLoteDTO::of)
+                .toList();
+    }
 
     /**
      * Cadastra um novo produto no Oracle DBAMV via Portal HTTP.
@@ -59,29 +96,12 @@ public class CadastroProdutoService {
         body.put("sn_opme",                 req.getSnOpme());
         body.put("cd_sican",                req.getCdSican());
 
-        // Lógica PRO_FAT:
-        // - cd_pro_fat informado  → usa direto, sem cadastrar novo
-        // - cd_pro_fat não informado → cadastra novo PRO_FAT (ds_pro_fat ou ds_produto como fallback)
-        //   e sobrescreve o body com o código gerado
-        if (req.getCdProFat() == null || req.getCdProFat().isBlank()) {
-            String dsProFat = (req.getDsProFat() != null && !req.getDsProFat().isBlank())
-                    ? req.getDsProFat() : req.getDsProduto();
-            // DS_PRO_FAT tem limite de 60 chars no Oracle — trunca para não estourar
-            if (dsProFat != null && dsProFat.length() > 60) dsProFat = dsProFat.substring(0, 60);
-            Map<String, Object> proFatBody = new HashMap<>();
-            proFatBody.put("ds_pro_fat", dsProFat);
-            proFatBody.put("sn_opme",    req.getSnOpme() != null ? req.getSnOpme() : "N");
-            var proFatResp = portalClient.cadastrarProFat(c.host(), c.apikey(), proFatBody);
-            if (proFatResp != null) {
-                Object resultadoRaw = proFatResp.get("resultado");
-                if (resultadoRaw instanceof java.util.Map<?, ?> rm) {
-                    Object v = rm.get("cd_pro_fat_out");
-                    if (v != null && !v.toString().isBlank()) {
-                        body.put("cd_pro_fat", v.toString());
-                    }
-                }
-            }
-        }
+        // PRO_FAT criado inline no Oracle com código '090' + cd_produto (quando cd_pro_fat não informado).
+        // Passa ds_pro_fat para o SQL usar como descrição do novo PRO_FAT.
+        String dsProFat = (req.getDsProFat() != null && !req.getDsProFat().isBlank())
+                ? req.getDsProFat() : req.getDsProduto();
+        if (dsProFat != null && dsProFat.length() > 60) dsProFat = dsProFat.substring(0, 60);
+        body.put("ds_pro_fat", dsProFat);
 
         var portalResp = portalClient.cadastrarProduto(c.host(), c.apikey(), body);
 
@@ -100,7 +120,18 @@ public class CadastroProdutoService {
 
         // Registrar de-para quando o produto foi criado com sucesso no MV
         if (cdProduto != null) {
+            // Resolve lote se informado
+            ImportacaoLote lote = null;
+            if (req.getCdLote() != null) {
+                lote = loteRepository.findById(req.getCdLote()).orElse(null);
+                if (lote != null) {
+                    lote.setQtProdutos(lote.getQtProdutos() + 1);
+                    loteRepository.save(lote);
+                }
+            }
+
             importacaoRepository.save(ImportacaoProduto.builder()
+                    .lote(lote)
                     .auth0Sub(auth0Sub)
                     .cdProdutoMv(cdProduto)
                     .dsProduto(req.getDsProduto())

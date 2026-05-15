@@ -8,6 +8,7 @@ import br.tec.suportes.backend.dto.produto.ClasseDTO;
 import br.tec.suportes.backend.dto.produto.ClassificacaoRequest;
 import br.tec.suportes.backend.dto.produto.EmpresaProdutoDTO;
 import br.tec.suportes.backend.dto.produto.EspecieDTO;
+import br.tec.suportes.backend.dto.produto.ImportacaoLoteDTO;
 import br.tec.suportes.backend.dto.produto.ProdutoDTO;
 import br.tec.suportes.backend.dto.produto.SubClasseDTO;
 import br.tec.suportes.backend.dto.produto.UniProDTO;
@@ -15,12 +16,18 @@ import br.tec.suportes.backend.dto.produto.UnidadeDTO;
 import br.tec.suportes.backend.dto.produto.ImportacaoProdutoDTO;
 import br.tec.suportes.backend.service.CadastroProdutoService;
 import br.tec.suportes.backend.service.ProdutoService;
+import br.tec.suportes.backend.service.RelatorioImportacaoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @RestController
@@ -30,6 +37,7 @@ public class ProdutoController {
 
     private final ProdutoService produtoService;
     private final CadastroProdutoService cadastroProdutoService;
+    private final RelatorioImportacaoService relatorioImportacaoService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<PagedResponse<ProdutoDTO>>> listar(
@@ -121,6 +129,37 @@ public class ProdutoController {
             @RequestHeader("X-Auth0-Sub") String auth0Sub
     ) {
         return ResponseEntity.ok(ApiResponse.ok(cadastroProdutoService.listarImportacoes(auth0Sub)));
+    }
+
+    // ── Lotes de importação ─────────────────────────────────────────────────
+
+    @PostMapping("/importacoes/lotes")
+    public ResponseEntity<ApiResponse<ImportacaoLoteDTO>> criarLote(
+            @RequestHeader("X-Auth0-Sub") String auth0Sub
+    ) {
+        var lote = cadastroProdutoService.criarLote(auth0Sub);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok(lote));
+    }
+
+    @GetMapping("/importacoes/lotes")
+    public ResponseEntity<ApiResponse<List<ImportacaoLoteDTO>>> listarLotes(
+            @RequestHeader("X-Auth0-Sub") String auth0Sub
+    ) {
+        return ResponseEntity.ok(ApiResponse.ok(cadastroProdutoService.listarLotes(auth0Sub)));
+    }
+
+    @GetMapping("/importacoes/lotes/{id}/relatorio")
+    public ResponseEntity<byte[]> downloadRelatorio(
+            @RequestHeader("X-Auth0-Sub") String auth0Sub,
+            @PathVariable Long id
+    ) {
+        byte[] excel = relatorioImportacaoService.gerarExcel(id);
+        String filename = "importacao-" + id + "-" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmm")) + ".xlsx";
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+        headers.setContentDisposition(ContentDisposition.attachment().filename(filename).build());
+        headers.setContentLength(excel.length);
+        return ResponseEntity.ok().headers(headers).body(excel);
     }
 }
 
