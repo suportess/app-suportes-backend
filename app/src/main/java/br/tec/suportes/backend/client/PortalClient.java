@@ -135,6 +135,32 @@ public class PortalClient {
                 new ParameterizedTypeReference<Map<String, Object>>() {});
     }
 
+    // --- Saldos ---------------------------------------------------------------
+
+    /** Consulta saldo de um produto no Oracle via bloco anônimo. Retorna {"resultado":{"result_out":"..."}}. */
+    public Map<String, Object> consultarSaldo(String host, String apikey, java.util.Map<String, Object> body) {
+        return post(host, apikey, "/mv/api/saldos/consultar-item", body,
+                new ParameterizedTypeReference<Map<String, Object>>() {});
+    }
+
+    /** Executa devolução de saldo consignado ao fornecedor via bloco anônimo. */
+    public Map<String, Object> devolverSaldoConsig(String host, String apikey, java.util.Map<String, Object> body) {
+        return post(host, apikey, "/mv/api/devolucoes/saldo-consig", body,
+                new ParameterizedTypeReference<Map<String, Object>>() {});
+    }
+
+    /** Registra entrada de produto no estoque (ENT_PRO + ITENT_PRO) via bloco anônimo. */
+    public Map<String, Object> darEntradaProduto(String host, String apikey, java.util.Map<String, Object> body) {
+        return post(host, apikey, "/mv/api/entradas/saldo", body,
+                new ParameterizedTypeReference<Map<String, Object>>() {});
+    }
+
+    /** Executa transferência atômica: devolução de N cabeças + entrada de N filhos via bloco anônimo. */
+    public Map<String, Object> transferenciaProduto(String host, String apikey, java.util.Map<String, Object> body) {
+        return post(host, apikey, "/mv/api/entradas/transferencia", body,
+                new ParameterizedTypeReference<Map<String, Object>>() {});
+    }
+
     // --- Status ---------------------------------------------------------------
 
     /**
