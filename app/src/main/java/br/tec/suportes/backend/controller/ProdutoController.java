@@ -15,6 +15,7 @@ import br.tec.suportes.backend.dto.produto.UniProDTO;
 import br.tec.suportes.backend.dto.produto.UnidadeDTO;
 import br.tec.suportes.backend.dto.produto.ImportacaoProdutoDTO;
 import br.tec.suportes.backend.service.CadastroProdutoService;
+import br.tec.suportes.backend.service.ModeloProdutosService;
 import br.tec.suportes.backend.service.ProdutoService;
 import br.tec.suportes.backend.service.RelatorioImportacaoService;
 import jakarta.validation.Valid;
@@ -38,6 +39,7 @@ public class ProdutoController {
     private final ProdutoService produtoService;
     private final CadastroProdutoService cadastroProdutoService;
     private final RelatorioImportacaoService relatorioImportacaoService;
+    private final ModeloProdutosService modeloProdutosService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<PagedResponse<ProdutoDTO>>> listar(
@@ -146,6 +148,22 @@ public class ProdutoController {
             @RequestHeader("X-Auth0-Sub") String auth0Sub
     ) {
         return ResponseEntity.ok(ApiResponse.ok(cadastroProdutoService.listarLotes(auth0Sub)));
+    }
+
+    @GetMapping("/modelo")
+    public ResponseEntity<byte[]> downloadModelo(
+            @RequestHeader("X-Auth0-Sub") String auth0Sub,
+            @RequestParam(name = "tipo", defaultValue = "padrao") String tipo
+    ) {
+        byte[] excel = modeloProdutosService.gerarModelo(tipo);
+        String filename = "modelo_produtos_" + tipo + ".xlsx";
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.parseMediaType(
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+        headers.setContentDisposition(
+                ContentDisposition.attachment().filename(filename).build());
+        headers.setContentLength(excel.length);
+        return ResponseEntity.ok().headers(headers).body(excel);
     }
 
     @GetMapping("/importacoes/lotes/{id}/relatorio")

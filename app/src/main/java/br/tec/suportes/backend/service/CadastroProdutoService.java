@@ -102,18 +102,25 @@ public class CadastroProdutoService {
                 ? req.getDsProFat() : req.getDsProduto();
         if (dsProFat != null && dsProFat.length() > 60) dsProFat = dsProFat.substring(0, 60);
         body.put("ds_pro_fat", dsProFat);
+        body.put("valor_inicial_produto", req.getValorInicialProduto());
+        body.put("cd_estoque",            req.getCdEstoque());
 
         var portalResp = portalClient.cadastrarProduto(c.host(), c.apikey(), body);
 
         Long cdProduto = null;
+        String resultadoJson = null;
         if (portalResp != null) {
-            // Portal retorna {"resultado": {"cd_produto_out": "33337"}}
+            // Portal retorna {"resultado": {"cd_produto_out": "33337", "resultado_json": "{...}"}}
             Object resultadoRaw = portalResp.get("resultado");
             if (resultadoRaw instanceof java.util.Map<?, ?> resultadoMap) {
                 Object outVal = resultadoMap.get("cd_produto_out");
                 if (outVal != null) {
                     try { cdProduto = Long.parseLong(outVal.toString()); }
                     catch (NumberFormatException ignored) {}
+                }
+                Object jsonVal = resultadoMap.get("resultado_json");
+                if (jsonVal != null && !jsonVal.toString().isBlank()) {
+                    resultadoJson = jsonVal.toString().trim();
                 }
             }
         }
@@ -146,7 +153,7 @@ public class CadastroProdutoService {
                     .build());
         }
 
-        return CadastroProdutoResponse.of(req.getDsProduto(), cdProduto);
+        return CadastroProdutoResponse.of(req.getDsProduto(), cdProduto, resultadoJson);
     }
 
     public List<ImportacaoProdutoDTO> listarImportacoes(String auth0Sub) {

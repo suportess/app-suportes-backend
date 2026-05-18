@@ -102,6 +102,13 @@ public class CadastroProdutoRequest {
     @JsonProperty("empresas")
     private List<Integer> empresas;
 
+    // ── Valor inicial do produto ────────────────────────────────────────────────
+    @JsonProperty("valor_inicial_produto")
+    private java.math.BigDecimal valorInicialProduto;
+
+    @JsonProperty("cd_estoque")
+    private Integer cdEstoque;
+
     // ── Lote de importação (agrupador de sessão) ──────────────────────────────
     @JsonProperty("cd_lote")
     private Long cdLote;
