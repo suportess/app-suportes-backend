@@ -50,6 +50,10 @@ public class ModeloProdutosService {
                     "150.50"
                 };
             }
+            case "bloqueio" -> {
+                fieldNames = new String[]{ "cd_produto", "acao" };
+                exemploRow = new String[]{ "12345", "BLOQUEIO" };
+            }
             default -> { // padrao
                 fieldNames = new String[]{
                     "ds_produto", "sn_lote", "sn_validade", "sn_medicamento", "sn_consignado",
@@ -68,9 +72,10 @@ public class ModeloProdutosService {
 
         // ── Cores por tipo ────────────────────────────────────────────────────
         byte[] headerRgb = switch (t) {
-            case "obrigatorios" -> new byte[]{(byte) 0x14, (byte) 0x6B, (byte) 0x45}; // verde escuro
-            case "todos"        -> new byte[]{(byte) 0x2D, (byte) 0x22, (byte) 0x7B}; // índigo
-            default             -> new byte[]{(byte) 0x0D, (byte) 0x52, (byte) 0x6E}; // teal (padrão dos relatórios)
+            case "obrigatorios" -> new byte[]{(byte) 0x14, (byte) 0x6B, (byte) 0x45};
+            case "todos"        -> new byte[]{(byte) 0x2D, (byte) 0x22, (byte) 0x7B};
+            case "bloqueio"     -> new byte[]{(byte) 0xB4, (byte) 0x45, (byte) 0x09};
+            default             -> new byte[]{(byte) 0x0D, (byte) 0x52, (byte) 0x6E};
         };
 
         try (XSSFWorkbook wb = new XSSFWorkbook()) {

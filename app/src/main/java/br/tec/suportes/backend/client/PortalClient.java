@@ -149,6 +149,12 @@ public class PortalClient {
                 new ParameterizedTypeReference<Map<String, Object>>() {});
     }
 
+    /** Bloqueia ou desbloqueia um produto para movimentação e compras. */
+    public Map<String, Object> bloquearProduto(String host, String apikey, java.util.Map<String, Object> body) {
+        return post(host, apikey, "/mv/api/produtos/bloqueio", body,
+                new ParameterizedTypeReference<Map<String, Object>>() {});
+    }
+
     /** Registra entrada de produto no estoque (ENT_PRO + ITENT_PRO) via bloco anônimo. */
     public Map<String, Object> darEntradaProduto(String host, String apikey, java.util.Map<String, Object> body) {
         return post(host, apikey, "/mv/api/entradas/saldo", body,

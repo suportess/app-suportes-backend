@@ -14,6 +14,12 @@ import br.tec.suportes.backend.dto.produto.SubClasseDTO;
 import br.tec.suportes.backend.dto.produto.UniProDTO;
 import br.tec.suportes.backend.dto.produto.UnidadeDTO;
 import br.tec.suportes.backend.dto.produto.ImportacaoProdutoDTO;
+import br.tec.suportes.backend.dto.produto.BloquearProdutoRequest;
+import br.tec.suportes.backend.dto.produto.BloqueioLoteDTO;
+import br.tec.suportes.backend.dto.produto.RegistrarBloqueioLoteRequest;
+import br.tec.suportes.backend.service.BloquearProdutoService;
+import br.tec.suportes.backend.service.BloqueioHistoricoService;
+import br.tec.suportes.backend.service.BloqueioRelatorioService;
 import br.tec.suportes.backend.service.CadastroProdutoService;
 import br.tec.suportes.backend.service.ModeloProdutosService;
 import br.tec.suportes.backend.service.ProdutoService;
@@ -38,6 +44,9 @@ public class ProdutoController {
 
     private final ProdutoService produtoService;
     private final CadastroProdutoService cadastroProdutoService;
+    private final BloquearProdutoService bloquearProdutoService;
+    private final BloqueioHistoricoService bloqueioHistoricoService;
+    private final BloqueioRelatorioService bloqueioRelatorioService;
     private final RelatorioImportacaoService relatorioImportacaoService;
     private final ModeloProdutosService modeloProdutosService;
 
@@ -124,6 +133,46 @@ public class ProdutoController {
     ) {
         var response = cadastroProdutoService.cadastrar(auth0Sub, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok(response));
+    }
+
+    @PostMapping("/bloqueio")
+    public ResponseEntity<ApiResponse<Object>> bloquear(
+            @RequestHeader("X-Auth0-Sub") String auth0Sub,
+            @RequestBody @Valid BloquearProdutoRequest request
+    ) {
+        var resultado = bloquearProdutoService.bloquear(auth0Sub, request);
+        return ResponseEntity.ok(ApiResponse.ok(resultado));
+    }
+
+    @PostMapping("/bloqueio/historico")
+    public ResponseEntity<ApiResponse<BloqueioLoteDTO>> registrarBloqueioLote(
+            @RequestHeader("X-Auth0-Sub") String auth0Sub,
+            @RequestBody RegistrarBloqueioLoteRequest request
+    ) {
+        var lote = bloqueioHistoricoService.registrar(auth0Sub, request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok(lote));
+    }
+
+    @GetMapping("/bloqueio/historico")
+    public ResponseEntity<ApiResponse<List<BloqueioLoteDTO>>> listarBloqueioLotes(
+            @RequestHeader("X-Auth0-Sub") String auth0Sub
+    ) {
+        return ResponseEntity.ok(ApiResponse.ok(bloqueioHistoricoService.listar(auth0Sub)));
+    }
+
+    @GetMapping("/bloqueio/historico/{id}/relatorio")
+    public ResponseEntity<byte[]> relatorioBloqueioLote(
+            @RequestHeader("X-Auth0-Sub") String auth0Sub,
+            @PathVariable Long id
+    ) {
+        byte[] excel = bloqueioRelatorioService.gerarExcel(auth0Sub, id);
+        String filename = "relatorio-bloqueio-" + id + ".xlsx";
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.parseMediaType(
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+        headers.setContentDisposition(
+                ContentDisposition.attachment().filename(filename).build());
+        return ResponseEntity.ok().headers(headers).body(excel);
     }
 
     @GetMapping("/importacoes")
