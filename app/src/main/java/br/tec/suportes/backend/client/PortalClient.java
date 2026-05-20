@@ -17,6 +17,7 @@ import br.tec.suportes.backend.exception.PortalClientException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
@@ -167,6 +168,12 @@ public class PortalClient {
                 new ParameterizedTypeReference<Map<String, Object>>() {});
     }
 
+    /** Vincula CD_PROCEDIMENTO_SUS de produtos antigos (pai) a produtos novos (filho) em lote. */
+    public Map<String, Object> vincularSusProduto(String host, String apikey, java.util.Map<String, Object> body) {
+        return post(host, apikey, "/mv/api/produtos/vincular-sus", body,
+                new ParameterizedTypeReference<Map<String, Object>>() {});
+    }
+
     // --- Status ---------------------------------------------------------------
 
     /**
@@ -223,6 +230,8 @@ public class PortalClient {
             return portalRestClient.post()
                     .uri(host + path)
                     .header("Authorization", "Bearer " + apikey)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .accept(MediaType.APPLICATION_JSON)
                     .body(body)
                     .retrieve()
                     .body(type);

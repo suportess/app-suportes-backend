@@ -54,6 +54,10 @@ public class ModeloProdutosService {
                 fieldNames = new String[]{ "cd_produto", "acao" };
                 exemploRow = new String[]{ "12345", "BLOQUEIO" };
             }
+            case "vinculo" -> {
+                fieldNames = new String[]{ "cd_produto_antigo", "cd_produto_novo" };
+                exemploRow = new String[]{ "12345", "67890" };
+            }
             default -> { // padrao
                 fieldNames = new String[]{
                     "ds_produto", "sn_lote", "sn_validade", "sn_medicamento", "sn_consignado",
@@ -75,6 +79,7 @@ public class ModeloProdutosService {
             case "obrigatorios" -> new byte[]{(byte) 0x14, (byte) 0x6B, (byte) 0x45};
             case "todos"        -> new byte[]{(byte) 0x2D, (byte) 0x22, (byte) 0x7B};
             case "bloqueio"     -> new byte[]{(byte) 0xB4, (byte) 0x45, (byte) 0x09};
+            case "vinculo"      -> new byte[]{(byte) 0x05, (byte) 0x6C, (byte) 0x77};
             default             -> new byte[]{(byte) 0x0D, (byte) 0x52, (byte) 0x6E};
         };
 

@@ -17,6 +17,8 @@ import br.tec.suportes.backend.dto.produto.ImportacaoProdutoDTO;
 import br.tec.suportes.backend.dto.produto.BloquearProdutoRequest;
 import br.tec.suportes.backend.dto.produto.BloqueioLoteDTO;
 import br.tec.suportes.backend.dto.produto.RegistrarBloqueioLoteRequest;
+import br.tec.suportes.backend.dto.vinculo.VincularSusRequest;
+import br.tec.suportes.backend.dto.vinculo.VinculoProdutoDTO;
 import br.tec.suportes.backend.service.BloquearProdutoService;
 import br.tec.suportes.backend.service.BloqueioHistoricoService;
 import br.tec.suportes.backend.service.BloqueioRelatorioService;
@@ -24,6 +26,8 @@ import br.tec.suportes.backend.service.CadastroProdutoService;
 import br.tec.suportes.backend.service.ModeloProdutosService;
 import br.tec.suportes.backend.service.ProdutoService;
 import br.tec.suportes.backend.service.RelatorioImportacaoService;
+import br.tec.suportes.backend.service.VincularSusService;
+import br.tec.suportes.backend.service.VinculoProdutoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ContentDisposition;
@@ -48,6 +52,8 @@ public class ProdutoController {
     private final BloqueioHistoricoService bloqueioHistoricoService;
     private final BloqueioRelatorioService bloqueioRelatorioService;
     private final RelatorioImportacaoService relatorioImportacaoService;
+    private final VincularSusService vincularSusService;
+    private final VinculoProdutoService vinculoProdutoService;
     private final ModeloProdutosService modeloProdutosService;
 
     @GetMapping
@@ -227,6 +233,24 @@ public class ProdutoController {
         headers.setContentDisposition(ContentDisposition.attachment().filename(filename).build());
         headers.setContentLength(excel.length);
         return ResponseEntity.ok().headers(headers).body(excel);
+    }
+
+    // ── Vínculo SUS ────────────────────────────────────────────────────────────
+
+    @PostMapping("/vinculo-sus")
+    public ResponseEntity<ApiResponse<java.util.Map<String, Object>>> vincularSus(
+            @RequestHeader("X-Auth0-Sub") String auth0Sub,
+            @Valid @RequestBody VincularSusRequest req
+    ) {
+        var result = vincularSusService.vincular(auth0Sub, req);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok(result));
+    }
+
+    @GetMapping("/vinculo-sus/historico")
+    public ResponseEntity<ApiResponse<List<VinculoProdutoDTO>>> listarVinculoSessoes(
+            @RequestHeader("X-Auth0-Sub") String auth0Sub
+    ) {
+        return ResponseEntity.ok(ApiResponse.ok(vinculoProdutoService.listarSessoes()));
     }
 }
 

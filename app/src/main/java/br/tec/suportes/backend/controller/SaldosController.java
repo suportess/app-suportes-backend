@@ -9,14 +9,19 @@ import br.tec.suportes.backend.dto.saldos.ImportacaoSaldosRequest;
 import br.tec.suportes.backend.dto.saldos.ImportarDevolucaoItemRequest;
 import br.tec.suportes.backend.dto.saldos.ImportarDevolucaoItemResponse;
 import br.tec.suportes.backend.dto.saldos.TransferenciaRequest;
+import br.tec.suportes.backend.dto.vinculo.ItVinculoProdutoDTO;
+import br.tec.suportes.backend.dto.vinculo.VinculoProdutoDTO;
 import br.tec.suportes.backend.exception.RecursoNaoEncontradoException;
 import br.tec.suportes.backend.repository.ImportacaoDevolucaoItemRepository;
 import br.tec.suportes.backend.repository.ImportacaoDevolucaoRepository;
+import br.tec.suportes.backend.repository.ItVinculoProdutoRepository;
+import br.tec.suportes.backend.repository.VinculoProdutoRepository;
 import br.tec.suportes.backend.service.ConsultaSaldosService;
 import br.tec.suportes.backend.service.ImportacaoDevolucaoService;
 import br.tec.suportes.backend.service.ImportacaoTransferenciaService;
 import br.tec.suportes.backend.service.ModeloSaldosService;
 import br.tec.suportes.backend.service.RelatorioImportacaoService;
+import br.tec.suportes.backend.service.VinculoProdutoService;
 import lombok.extern.slf4j.Slf4j;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +47,9 @@ public class SaldosController {
     private final ImportacaoDevolucaoRepository importacaoDevolucaoRepository;
     private final ImportacaoDevolucaoItemRepository importacaoDevolucaoItemRepository;
     private final RelatorioImportacaoService relatorioImportacaoService;
+    private final VinculoProdutoService vinculoProdutoService;
+    private final VinculoProdutoRepository vinculoProdutoRepository;
+    private final ItVinculoProdutoRepository itVinculoProdutoRepository;
 
     /**
      * Retorna o arquivo Excel modelo para importação de saldos.
@@ -190,6 +198,57 @@ public class SaldosController {
             }
         }
 
+        // Persiste vínculos SUS gerados (se houver)
+        try {
+            @SuppressWarnings("unchecked")
+            java.util.List<?> susVinculos = (java.util.List<?>) resultado.get("sus_vinculos");
+            if (susVinculos != null && !susVinculos.isEmpty()) {
+                Long cdVinculo = vinculoProdutoService.persistir(auth0Sub, resultado);
+                resultado = new java.util.HashMap<>(resultado);
+                resultado.put("cd_vinculo_sessao", cdVinculo);
+            }
+        } catch (Exception e) {
+            log.warn("Falha ao persistir vinculos SUS: {}", e.getMessage());
+        }
+
         return ResponseEntity.ok(ApiResponse.ok(resultado));
+    }
+
+    /**
+     * Retorna o histórico paginado de sessões de vínculo SUS.
+     * GET /saldos/vinculos?page=0&size=10
+     */
+    @GetMapping("/vinculos")
+    public ResponseEntity<ApiResponse<PagedResponse<VinculoProdutoDTO>>> vinculos(
+            @RequestHeader("X-Auth0-Sub") String auth0Sub,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        var pageable = org.springframework.data.domain.PageRequest.of(page, Math.min(size, 50));
+        var pg = vinculoProdutoRepository.findAllByOrderByDtVinculoDesc(pageable);
+
+        var resp = new PagedResponse<VinculoProdutoDTO>();
+        resp.setDados(pg.getContent().stream().map(VinculoProdutoDTO::of).toList());
+        resp.setPagina(pg.getNumber());
+        resp.setTamanhoPagina(pg.getSize());
+        resp.setTotal(pg.getTotalElements());
+        return ResponseEntity.ok(ApiResponse.ok(resp));
+    }
+
+    /**
+     * Retorna os itens de uma sessão de vínculo SUS.
+     * GET /saldos/vinculos/{id}/itens
+     */
+    @GetMapping("/vinculos/{id}/itens")
+    public ResponseEntity<ApiResponse<java.util.List<ItVinculoProdutoDTO>>> vinculosItens(
+            @RequestHeader("X-Auth0-Sub") String auth0Sub,
+            @PathVariable Long id
+    ) {
+        if (!vinculoProdutoRepository.existsById(id)) {
+            throw new RecursoNaoEncontradoException("Sessão de vínculo " + id + " não encontrada.");
+        }
+        var itens = itVinculoProdutoRepository.findByCdSessaoOrderByNrLinha(id)
+                .stream().map(ItVinculoProdutoDTO::of).toList();
+        return ResponseEntity.ok(ApiResponse.ok(itens));
     }
 }
