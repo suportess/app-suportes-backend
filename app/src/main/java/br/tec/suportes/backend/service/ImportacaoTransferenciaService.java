@@ -59,6 +59,8 @@ public class ImportacaoTransferenciaService {
                         m.put("cd_estoque",    i.cdEstoque());
                         m.put("cd_fornecedor", i.cdFornecedor());
                         m.put("cd_unidade",    i.cdUnidade());
+                        m.put("cd_lote",       i.cdLote());
+                        m.put("dt_validade",   i.dtValidade());
                         return m;
                     })
                     .toList();

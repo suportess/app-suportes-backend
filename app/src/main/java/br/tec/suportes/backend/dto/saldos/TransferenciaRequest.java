@@ -81,6 +81,12 @@ public record TransferenciaRequest(
             @NotNull(message = "itens[].cdUnidade é obrigatório.")
             String cdUnidade,
 
+            /** Lote do produto — obrigatório se o produto controla lote (SN_LOTE='S') */
+            String cdLote,
+
+            /** Data de validade (DD/MM/YYYY) — obrigatório se o produto controla validade */
+            String dtValidade,
+
             // ── Metadata para persistência no histórico (opcionais) ──────
             Integer nrLinha,
             String  dsProduto,

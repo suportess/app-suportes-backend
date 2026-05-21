@@ -45,8 +45,11 @@ public class ModeloSaldosService {
             CellStyle csNumRightDev = criarNumRightDev(wb);
             CellStyle csNumRightTr  = criarNumRightTransf(wb);
 
-            // Cabeçalhos
-            String[] colunas = {"Produto", "Estoque", "Fornecedor", "Unidade", "Saldo", "Movimento"};
+            // Cabeçalhos (transferência/misto ganham Lote + Validade + Qtd)
+            boolean comLote = "transferencia".equals(t) || "misto".equals(t);
+            String[] colunas = comLote
+                ? new String[]{"Produto", "Estoque", "Fornecedor", "Unidade", "Saldo", "Movimento", "Lote", "Validade"}
+                : new String[]{"Produto", "Estoque", "Fornecedor", "Unidade", "Saldo", "Movimento"};
             Row rowHeader = sheet.createRow(0);
             rowHeader.setHeightInPoints(22);
             for (int i = 0; i < colunas.length; i++) {
@@ -59,20 +62,24 @@ public class ModeloSaldosService {
                     {"10305", "30", "37999", "UNI", "150", "ENTRADA"},
                 };
                 case "transferencia" -> new Object[][]{
-                    {"10305", "30", "37999", "UNI", "150", "TRANSFERENCIA"},
-                    {"12313", "30", "37999", "UNI", "50",  ""},
-                    {"9572",  "30", "37999", "UNI", "100", ""},
+                    {"10305", "30", "",      "UNI", "5",   "TRANSFERENCIA", "",     ""},
+                    {"33677", "30", "37999", "UNI", "50",  "",             "",     ""},
+                    {"",      "",   "",       "",    "25",  "",             "XPTO", "01/01/2050"},
+                    {"",      "",   "",       "",    "25",  "",             "XYL",  "01/01/2050"},
+                    {"33671", "30", "37999", "UNI", "100", "",             "",     ""},
                 };
                 case "misto" -> new Object[][]{
-                    {"10305", "30", "",      "UNI", "5",   "TRANSFERENCIA"},
-                    {"4091",  "30", "",      "UNI", "5",   "TRANSFERENCIA"},
-                    {"12313", "30", "37999", "UNI", "50",  ""},
-                    {"9572",  "30", "37999", "UNI", "100", ""},
-                    {"10305", "30", "37999", "UNI", "150", "ENTRADA"},
-                    {"10305", "30", "37999", "UNI", "150", "DEVOLUCAO"},
-                    {"9572",  "30", "37999", "UNI", "100", "ENTRADA"},
-                    {"9572",  "30", "37999", "UNI", "100", "DEVOLUCAO"},
-                    {"10305", "30", "37999", "UNI", "5",   "ENTRADA"},
+                    {"10305", "30", "",      "UNI", "5",   "TRANSFERENCIA", "",      ""},
+                    {"4091",  "30", "",      "UNI", "5",   "TRANSFERENCIA", "",      ""},
+                    {"12313", "30", "37999", "UNI", "50",  "",              "",      ""},
+                    {"",      "",   "",       "",    "30",  "",              "LOTE1", "01/01/2030"},
+                    {"",      "",   "",       "",    "20",  "",              "LOTE2", "01/06/2030"},
+                    {"9572",  "30", "37999", "UNI", "100", "",              "",      ""},
+                    {"10305", "30", "37999", "UNI", "150", "ENTRADA",       "",      ""},
+                    {"10305", "30", "37999", "UNI", "150", "DEVOLUCAO",     "",      ""},
+                    {"9572",  "30", "37999", "UNI", "100", "ENTRADA",       "",      ""},
+                    {"9572",  "30", "37999", "UNI", "100", "DEVOLUCAO",     "",      ""},
+                    {"10305", "30", "37999", "UNI", "5",   "ENTRADA",       "",      ""},
                 };
                 default -> new Object[][]{  // devolucao
                     {"3080", "2", "0099", "UND", "2",  "DEVOLUCAO"},
@@ -91,6 +98,7 @@ public class ModeloSaldosService {
                 for (int c = 0; c < linha.length; c++) {
                     CellStyle cs;
                     if (c == 4) {
+                        // Saldo — alinhamento numérico à direita
                         cs = isTransfHead || isTransfItem ? csNumRightTr
                            : isDev ? csNumRightDev : csNumRight;
                     } else {
@@ -103,7 +111,9 @@ public class ModeloSaldosService {
             }
 
             // Larguras (em unidades de 256)
-            int[] larguras = {15, 12, 15, 10, 10, 15};
+            int[] larguras = comLote
+                ? new int[]{15, 12, 15, 10, 10, 15, 12, 14}
+                : new int[]{15, 12, 15, 10, 10, 15};
             for (int i = 0; i < larguras.length; i++) {
                 sheet.setColumnWidth(i, larguras[i] * 256);
             }
@@ -145,19 +155,29 @@ public class ModeloSaldosService {
                     {"Estoque        | Nao          | CD_ESTOQUE do MV. Itens herdam da linha cabeca se vazio."},
                     {"Fornecedor     | Nao          | CD_FORNECEDOR. Itens herdam da linha cabeca se vazio."},
                     {"Unidade        | Nao          | Unidade de medida. Itens herdam da linha cabeca se vazio."},
-                    {"Saldo          | SIM          | Quantidade (valor numerico positivo)"},
+                    {"Saldo          | SIM*         | Quantidade total do item (informativo quando ha sub-linhas de lote)."},
                     {"Movimento      | SIM (cabeca) | Use: TRANSFERENCIA (tambem aceita: TRANSF, TRANS)"},
+                    {"Lote           | Cond.        | Codigo do lote — OBRIGATORIO se o produto controla lote (SN_LOTE=S)."},
+                    {"Validade       | Cond.        | Data de validade no formato DD/MM/AAAA — obrigatorio se produto controla validade."},
+                    {"Qtd            | Cond.        | Quantidade desta sub-linha de lote. Obrigatorio quando Lote for preenchido."},
                     {""},
                     {"COMO FUNCIONA O GRUPO DE TRANSFERENCIA:"},
-                    {"- A linha com Movimento=TRANSFERENCIA e a CABECA do grupo."},
-                    {"- As linhas seguintes com Movimento VAZIO pertencem ao mesmo grupo (sao ITENS)."},
+                    {"- A linha com Movimento=TRANSFERENCIA e a CABECA do grupo (produto devolvido)."},
+                    {"- As linhas seguintes com Movimento VAZIO e Produto preenchido sao ITENS (produtos de entrada)."},
                     {"- O grupo termina quando aparece outra linha com Movimento preenchido."},
                     {"- Estoque, Fornecedor e Unidade da cabeca sao herdados pelos itens que nao os informarem."},
                     {""},
+                    {"COMO USAR LOTE E VALIDADE:"},
+                    {"- Se o produto de entrada controla lote, preencha Lote + Validade + Qtd em SUB-LINHAS."},
+                    {"- Cada sub-linha representa um lote diferente (Produto e Estoque ficam VAZIOS)."},
+                    {"- A Qtd da sub-linha e a quantidade para AQUELE lote especifico."},
+                    {"- O campo Saldo na linha-pai vira sendo apenas informativo (nao e enviado)."},
+                    {"- Se o produto nao controla lote, nao e necessario preencher Lote/Validade/Qtd."},
+                    {"- Se o produto controla lote e as colunas estiverem vazias, o sistema retornara ERRO."},
+                    {""},
                     {"NOTAS:"},
-                    {"- Itens do grupo nao precisam de Movimento preenchido — serao marcados como ITEM TRANSF."},
                     {"- Numeros decimais: use virgula (ex: 1,5) ou ponto (ex: 1.5)"},
-                    {"- Valores negativos de saldo serao rejeitados"},
+                    {"- Valores negativos serao rejeitados"},
                   }
                 : new String[][]{
                     {t.equals("misto") ? "INSTRUCOES DE PREENCHIMENTO — MODELO MISTO" : "INSTRUCOES DE PREENCHIMENTO — MODELO DEVOLUCAO"},
