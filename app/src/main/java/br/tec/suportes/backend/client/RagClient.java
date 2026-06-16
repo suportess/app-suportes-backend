@@ -40,9 +40,12 @@ public class RagClient {
 
     // --- Tabelas --------------------------------------------------------------
 
-    public PagedResponse<TabelaRagResponse> listarTabelas(int pagina, int tamanhoPagina) {
-        return get("/api/tabelas?pagina=" + pagina + "&tamanhoPagina=" + tamanhoPagina,
-                new ParameterizedTypeReference<>() {});
+    public PagedResponse<TabelaRagResponse> listarTabelas(int pagina, int tamanhoPagina, String filtroNome) {
+        var url = "/api/tabelas?pagina=" + pagina + "&tamanhoPagina=" + tamanhoPagina;
+        if (filtroNome != null && !filtroNome.isBlank()) {
+            url += "&nome=" + java.net.URLEncoder.encode(filtroNome.trim(), java.nio.charset.StandardCharsets.UTF_8);
+        }
+        return get(url, new ParameterizedTypeReference<>() {});
     }
 
     public TabelaRagResponse salvarTabela(TabelaRagRequest req) {

@@ -50,8 +50,9 @@ public class RagController {
     public ResponseEntity<ApiResponse<PagedResponse<TabelaRagResponse>>> listarTabelas(
             @RequestHeader("X-Auth0-Sub") String auth0Sub,
             @RequestParam(defaultValue = "0") int pagina,
-            @RequestParam(defaultValue = "20") int tamanhoPagina) {
-        return ResponseEntity.ok(ApiResponse.ok(ragClient.listarTabelas(pagina, tamanhoPagina)));
+            @RequestParam(defaultValue = "20") int tamanhoPagina,
+            @RequestParam(required = false) String nome) {
+        return ResponseEntity.ok(ApiResponse.ok(ragClient.listarTabelas(pagina, tamanhoPagina, nome)));
     }
 
     @PostMapping("/tabelas")
