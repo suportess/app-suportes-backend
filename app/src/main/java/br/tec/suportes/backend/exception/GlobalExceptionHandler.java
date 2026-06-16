@@ -44,6 +44,12 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(ApiResponse.erro(ex.getMessage()));
     }
 
+    @ExceptionHandler(RagClientException.class)
+    public ResponseEntity<ApiResponse<Void>> handleRagClient(RagClientException ex) {
+        log.error("Falha no rag client: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(ApiResponse.erro(ex.getMessage()));
+    }
+
     @ExceptionHandler(NgrokClientException.class)
     public ResponseEntity<ApiResponse<Void>> handleNgrokClient(NgrokClientException ex) {
         log.error("Falha no ngrok client: {}", ex.getMessage());
