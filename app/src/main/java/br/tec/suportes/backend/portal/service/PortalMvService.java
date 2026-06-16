@@ -14,10 +14,13 @@ import br.tec.suportes.backend.portal.dto.SaldoLoteDTO;
 import br.tec.suportes.backend.portal.dto.SaldoProdutoConsignadoDTO;
 import br.tec.suportes.backend.repository.ConfEmpresaRepository;
 import br.tec.suportes.backend.repository.UsuarioEmpresaRepository;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +29,7 @@ public class PortalMvService {
     private final PortalMvClient portalMvClient;
     private final ConfEmpresaRepository confEmpresaRepository;
     private final UsuarioEmpresaRepository usuarioEmpresaRepository;
+    private final ObjectMapper objectMapper;
 
     // ─── Validação de acesso ──────────────────────────────────────────────────
 
@@ -185,5 +189,28 @@ public class PortalMvService {
     ) {
         var creds = resolverCredenciais(auth0Sub, empresaId);
         return portalMvClient.listarSaldoConsignados(creds[0], creds[1], cdMultiEmpresa, cdEstoque, busca);
+    }
+
+    // ─── Consulta genérica Oracle ────────────────────────────────────────────
+
+    /**
+     * Executa um SELECT Oracle via DBMS_SQL e retorna os dados como lista de mapas.
+     * O portal devolve {"resultado":{"result_out":"[{...}]"}} — extraímos e parseamos o JSON.
+     */
+    @SuppressWarnings("unchecked")
+    public List<Map<String, Object>> consultaGenerica(String auth0Sub, Long empresaId, String sqlQuery) {
+        var creds = resolverCredenciais(auth0Sub, empresaId);
+        var raw = portalMvClient.consultaGenerica(creds[0], creds[1], sqlQuery);
+
+        try {
+            var resultado = (Map<String, Object>) raw.get("resultado");
+            var resultOut = resultado != null ? (String) resultado.get("result_out") : null;
+            if (resultOut == null || resultOut.isBlank()) {
+                return List.of();
+            }
+            return objectMapper.readValue(resultOut, new TypeReference<>() {});
+        } catch (Exception ex) {
+            throw new RuntimeException("Erro ao processar resposta da consulta genérica: " + ex.getMessage(), ex);
+        }
     }
 }

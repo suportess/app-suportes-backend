@@ -2,6 +2,7 @@ package br.tec.suportes.backend.portal.controller;
 
 import br.tec.suportes.backend.dto.ApiResponse;
 import br.tec.suportes.backend.dto.PagedResponse;
+import java.util.Map;
 import br.tec.suportes.backend.portal.dto.EntradaProdutoDTO;
 import br.tec.suportes.backend.portal.dto.FornecedorDTO;
 import br.tec.suportes.backend.portal.dto.EstoqueDTO;
@@ -140,6 +141,21 @@ public class PortalMvController {
             @PathVariable Long empresaId
     ) {
         var dados = portalMvService.listarFornecedores(auth0Sub, empresaId);
+        return ResponseEntity.ok(ApiResponse.ok(dados));
+    }
+
+    /** Executa um SELECT Oracle dinamicamente e retorna os dados como array JSON. */
+    @PostMapping("/consulta/generica")
+    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> consultaGenerica(
+            @RequestHeader("X-Auth0-Sub") String auth0Sub,
+            @PathVariable Long empresaId,
+            @RequestBody Map<String, String> body
+    ) {
+        var sqlQuery = body.get("sql_query");
+        if (sqlQuery == null || sqlQuery.isBlank()) {
+            throw new IllegalArgumentException("Campo 'sql_query' é obrigatório.");
+        }
+        var dados = portalMvService.consultaGenerica(auth0Sub, empresaId, sqlQuery);
         return ResponseEntity.ok(ApiResponse.ok(dados));
     }
 

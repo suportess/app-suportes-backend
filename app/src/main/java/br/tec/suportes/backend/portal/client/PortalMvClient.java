@@ -216,6 +216,25 @@ public class PortalMvClient {
         return get(client, "/mv/api/produtos-consignados", new ParameterizedTypeReference<>() {});
     }
 
+    /**
+     * Executa um SELECT Oracle dinamicamente e retorna o resultado como JSON string.
+     * POST /mv/api/consulta/generica
+     */
+    public Map<String, Object> consultaGenerica(String hostPortal, String apiKey, String sqlQuery) {
+        var client = buildClient(hostPortal, apiKey);
+        try {
+            log.debug("portal-mv POST /mv/api/consulta/generica");
+            return client.post()
+                    .uri("/mv/api/consulta/generica")
+                    .body(java.util.Map.of("sql_query", sqlQuery))
+                    .retrieve()
+                    .body(new ParameterizedTypeReference<Map<String, Object>>() {});
+        } catch (RestClientException ex) {
+            log.error("Erro ao chamar portal-mv POST /mv/api/consulta/generica: {}", ex.getMessage());
+            throw new PortalClientException("Falha na comunicação com o portal MV: " + ex.getMessage(), ex);
+        }
+    }
+
     // ─── Helper ───────────────────────────────────────────────────────────────
 
     private <T> T get(RestClient client, String uri, ParameterizedTypeReference<T> type) {
