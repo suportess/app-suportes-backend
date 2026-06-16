@@ -22,6 +22,7 @@ import org.springframework.web.client.RestClientException;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Client dinâmico para a API MV do portal.
